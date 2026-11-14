@@ -9,3 +9,5 @@ Judging criteria:
 
 Performance: net revenue calculation
 Explainability: in your presentation you should explain to a non technical stakeholder how your model works and how it reaches its recommendations
+
+There will also be a technical interviewer aside from the non technical stakeholders so we should be ready for technical questions just in case.
