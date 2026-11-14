@@ -1,7 +1,11 @@
-"""Extract the kits:  uv run python scripts/unpack.py [--password PW]   ->  data/<kit-name>/"""
+"""Extract the training kit:  uv run python scripts/unpack.py [--password PW]
+.py files -> scripts/, everything else (e.g. train.csv) -> data/
+"""
 
 import argparse
 import getpass
+import shutil
+import tempfile
 from pathlib import Path
 
 import py7zr
@@ -11,10 +15,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--password")
 password = ap.parse_args().password or getpass.getpass("Kit password: ")
 
-for archive in sorted(root.glob("*.7z")):
-    dest = root / "data" / archive.stem
+archive = root / "challenge_files" / "train-template-kit.7z"
+with tempfile.TemporaryDirectory() as tmp:
     with py7zr.SevenZipFile(archive, mode="r", password=password) as z:
-        z.extractall(path=dest)
-    print(f"\n{archive.name} -> {dest.relative_to(root)}")
-    for f in sorted(p for p in dest.rglob("*") if p.is_file()):
-        print(f"  {f.relative_to(dest)}")
+        z.extractall(path=tmp)
+    for src in sorted(p for p in Path(tmp).rglob("*") if p.is_file()):
+        dest = root / ("scripts" if src.suffix == ".py" else "data") / src.name
+        dest.parent.mkdir(exist_ok=True)
+        shutil.copyfile(src, dest)
+        print(f"{src.name} -> {dest.relative_to(root)}")
