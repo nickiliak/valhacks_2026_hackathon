@@ -41,7 +41,7 @@ def main() -> None:
     parser.add_argument("--split", choices=list(SPLITS), default="S2")
     parser.add_argument("--output", type=Path)
     parser.add_argument("--layout", choices=["auto", "combined", "per_hotel"], default="auto")
-    parser.add_argument("--calibration", choices=["auto", "raw", "sigmoid", "isotonic"], default="auto")
+    parser.add_argument("--calibration", choices=["auto", "raw", "sigmoid", "isotonic", "context"], default="auto")
     parser.add_argument("--iterations", type=int, default=800)
     parser.add_argument("--depth", type=int, default=6)
     parser.add_argument("--learning-rate", type=float, default=0.05)
@@ -52,7 +52,7 @@ def main() -> None:
     start = time.perf_counter()
     rows = load_history(args.data)
     purpose = ("October–December is now deployment calibration" if args.split == "Final"
-               else "S2 confirmation remains reserved")
+               else "Training and calibration exclude the later confirmation period")
     print(f"Training {args.split} on permitted historical data; {purpose}.", flush=True)
     model, report = train_cancellation_model(
         rows, split_name=args.split, layout=args.layout, calibration=args.calibration,

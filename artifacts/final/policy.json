@@ -1,11 +1,11 @@
 {
   "params": {
-    "load_target": 1.0,
-    "price_mult": 1.0,
+    "load_target": 1.1,
+    "price_mult": 0.85,
     "rate_scale": null,
     "demand_scale": 1.0,
     "margin": 0.0,
-    "raw_cap": 2.5,
+    "raw_cap": 4,
     "use_prices": true,
     "price_when_full": false,
     "risk": "mc",
@@ -23,7 +23,7 @@
     "seed": 2026
   },
   "notes": {
-    "config": "config\\policy.json",
+    "config": "config/policy.json",
     "history_rows": 78132,
     "demand_rows": 78132
   }

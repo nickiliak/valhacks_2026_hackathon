@@ -24,18 +24,24 @@ from hackathon.experiments import build_stream, line
 from hackathon.policy import PolicyParams
 
 BENCH = None
+BASE_SETTINGS = {}
 
 
-def start(stream: str, data_path: str) -> None:
-    global BENCH
-    BENCH = build_stream(stream, data_path)
+def start(stream: str, data_path: str, base_settings: dict | None = None, replay: dict | None = None) -> None:
+    global BENCH, BASE_SETTINGS
+    BASE_SETTINGS = dict(base_settings or {})
+    replay = replay or {}
+    BENCH = build_stream(stream, data_path,
+                         model_directory=replay.get("s2_model", "artifacts/cancellation_s2"),
+                         rolling_path=replay.get("rolling_probabilities", "artifacts/rolling_2016/p_show.csv"))
 
 
 def run(job: tuple[dict, str]) -> dict:
     settings, reading = job
-    result = BENCH.run(PolicyParams.from_dict({**PolicyParams().__dict__, **settings}), reading)
+    effective = {**BASE_SETTINGS, **settings}
+    result = BENCH.run(PolicyParams.from_dict(effective), reading)
     hotels = {f"net_{row.hotel.split()[0].lower()}": row.net_revenue for row in result.by_hotel.itertuples()}
-    return {**settings, "reading": reading, **hotels,
+    return {**effective, "reading": reading, **hotels,
             **{k: result.summary[k] for k in ("net_revenue", "revenue", "penalties", "walks", "accept_rate",
                                              "average_occupancy", "seconds")},
             "text": line(json.dumps(settings, separators=(",", ":")) + " " + reading[:4], result)}
@@ -61,17 +67,20 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--stream", choices=["s2", "year"], default="year")
     parser.add_argument("--data", default="data/train.csv")
+    parser.add_argument("--config", type=Path, default=Path("config/policy.json"))
     parser.add_argument("--set", action="append", default=[], help="name=v1,v2,... (repeatable; full grid)")
     parser.add_argument("--readings", default="stay_value")
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--output", type=Path, default=Path("artifacts/tuning"))
     args = parser.parse_args()
+    config = json.loads(args.config.read_text(encoding="utf-8"))
     names = [item.split("=")[0] for item in args.set]
     values = [[parse(v) for v in item.split("=")[1].split(",")] for item in args.set]
     jobs = [(dict(zip(names, combo)), reading) for combo in product(*values) for reading in args.readings.split(",")]
     args.output.mkdir(parents=True, exist_ok=True)
     rows = []
-    with ProcessPoolExecutor(min(args.workers, len(jobs)), initializer=start, initargs=(args.stream, args.data)) as pool:
+    with ProcessPoolExecutor(min(args.workers, len(jobs)), initializer=start,
+                             initargs=(args.stream, args.data, config["policy"], config.get("replay", {}))) as pool:
         for row in pool.map(run, jobs):
             print(row.pop("text"), flush=True)
             rows.append({"stream": args.stream, **row})

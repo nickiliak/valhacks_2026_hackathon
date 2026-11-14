@@ -173,6 +173,38 @@ class CancellationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "frozen"):
             train_cancellation_model(self.rows, split_name="Final", calibration="auto", iterations=2)
 
+    def test_context_model_roundtrip_matches_online_predictions(self):
+        calibration_rows = self.rows.loc[self.rows.arrival_date == "2016-05-15"]
+        raw = self.model._raw(self.model.features.make_features(calibration_rows))
+        calibration = ProbabilityCalibration.fit("context", raw, calibration_rows.cancelled,
+                                                 rows=calibration_rows)
+        model = CancellationModel(self.model.features, self.model.models, calibration)
+        queries = self.rows.loc[self.rows.arrival_date == "2016-08-15"].copy()
+        queries.loc[queries.index[0], ["agent", "country"]] = [987654, "UNKNOWN"]
+        batch = model.p_cancel(queries)
+        state = GroupCounter()
+        online = [model.p_cancel_one(row, state=state) for row in queries.to_dict("records")]
+        np.testing.assert_allclose(batch, online, atol=1e-14)
+        with tempfile.TemporaryDirectory() as directory:
+            model.save(directory)
+            restored = CancellationModel.load(directory)
+            np.testing.assert_allclose(restored.p_cancel(queries), batch, atol=1e-14)
+            self.assertEqual(restored.calibration.method, "context")
+        self.assertEqual(model.p_cancel(queries.iloc[:0]).shape, (0,))
+
+    def test_context_training_excludes_later_confirmation(self):
+        rows = self.rows.copy()
+        rows["cancelled"] = rows.cancelled.astype(object)
+        rows.loc[rows.arrival_date >= "2016-10-01", "cancelled"] = "UNAVAILABLE_FUTURE_OUTCOME"
+        model, report = train_cancellation_model(
+            rows, layout="combined", calibration="context", iterations=6, depth=2,
+            learning_rate=0.2, seed=17, threads=1,
+        )
+        self.assertEqual(report["selected_calibration"], "context")
+        self.assertEqual(model.calibration.parameters["fit_rows"], 32)
+        self.assertEqual(report["tuning"]["requests"]["rows"], 32)
+        self.assertFalse(report["confirmation_evaluated"])
+
 
 class CalibrationTests(unittest.TestCase):
     def test_all_methods_roundtrip_and_stay_bounded(self):

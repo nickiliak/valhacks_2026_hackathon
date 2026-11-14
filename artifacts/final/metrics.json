@@ -46,7 +46,7 @@
   "confirmation_evaluated": false,
   "calibration_candidates": {},
   "calibration_selection_population": "Explicit pre-frozen method; no holdout selection",
-  "selected_calibration": "isotonic",
+  "selected_calibration": "context",
   "feature_columns": [
     "hotel",
     "arrival_weekday",

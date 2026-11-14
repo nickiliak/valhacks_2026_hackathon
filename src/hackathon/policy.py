@@ -221,6 +221,9 @@ class RiskSim:
     def evaluate(self, t0: int, nights: int, key: float, value: float, show: np.ndarray):
         """Expected net revenue with the booking minus without it, on the same draws."""
         limit = min(self.T, t0 + nights + self.tail)
+        # Reserve room for ordinary stays beyond the bounded decision window.
+        # Longer affected stays extend this buffer below; their occupancy must
+        # remain exact even when their later revenue effects are not estimated.
         cur = self.occ[:, t0:min(self.T, limit + 45)].copy()
         columns = cur.shape[1]
         inserted = self._insert(t0, key, value, nights, show)
@@ -244,6 +247,10 @@ class RiskSim:
                 changed = diff.any(axis=1)
                 if changed.any():
                     longest = int(lens[changed].max())
+                    affected_end = min(self.T, t + longest)
+                    if affected_end > t0 + columns:
+                        cur = np.concatenate((cur, self.occ[:, t0 + columns:affected_end]), axis=1)
+                        columns = cur.shape[1]
                     width = min(columns - col, longest)
                     stay = (np.arange(width)[None, :] < lens[changed][:, None]).astype(np.float32)
                     cur[:, col:col + width] += diff[changed].T @ stay

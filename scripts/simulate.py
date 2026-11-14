@@ -3,14 +3,14 @@
 Streams (all are our reconstruction of the scorer, never 2017 data):
   year     the 2017 look-alike: all of 2016 from 1 Jan, reported for Jan-Sep arrivals
   s2       Jul-Sep 2016 from 1 Jul: commitments already overfill these nights
-  confirm  Oct-Dec 2016, the untouched confirmation period. Run it ONCE, after the
-           settings are frozen, with --frozen. Do not tune on it.
+  confirm  Oct-Dec 2016, previously used for confirmation and now development data.
+           Requires --frozen; use a new --output directory to preserve the archive.
 
 uv run python scripts/simulate.py --stream year
 uv run python scripts/simulate.py --stream year --set load_target=1.1   # try a change without editing the config
 
-Needs: scripts/train_cancel_model.py --split S2 --layout combined  (s2, confirm)
-       scripts/rolling_probabilities.py                             (year)
+Needs the model and probability files named in config's replay section.
+See README.md for commands to recreate the current context-calibrated inputs.
 """
 
 from __future__ import annotations
@@ -41,15 +41,19 @@ def main() -> None:
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     if args.stream == "confirm" and not args.frozen:
-        parser.error("The confirmation period is scored once. Freeze config/policy.json, then pass --frozen.")
-    settings = json.loads(args.config.read_text(encoding="utf-8"))["policy"]
+        parser.error("Historical confirmation replay requires --frozen. It is now development data; use a new --output directory to preserve the archive.")
+    config = json.loads(args.config.read_text(encoding="utf-8"))
+    settings = config["policy"].copy()
+    replay = config.get("replay", {})
     for item in args.set:
         name, value = item.split("=", 1)
         settings[name] = None if value in ("None", "none") else json.loads(value)
     params = PolicyParams.from_dict(settings)
     output = args.output or Path("artifacts") / f"simulate_{args.stream}"
     output.mkdir(parents=True, exist_ok=True)
-    bench = build_stream(args.stream, args.data)
+    bench = build_stream(args.stream, args.data,
+                         model_directory=replay.get("s2_model", "artifacts/cancellation_s2"),
+                         rolling_path=replay.get("rolling_probabilities", "artifacts/rolling_2016/p_show.csv"))
     print(f"{args.stream}: {STREAMS[args.stream]}")
     first = bench.prepared["stay_value"]
     show_rates = historical_show_rates(load_history(args.data), first.dates[0], first.rooms)

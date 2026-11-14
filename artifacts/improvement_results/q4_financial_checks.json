@@ -1,0 +1,116 @@
+{
+  "audit": "Independent saved-row financial and aggregation checks; incoming occupancy derived by subtracting Q4 seated stays",
+  "independent_confirmation": false,
+  "checks": {
+    "original": {
+      "all_checks_passed": true,
+      "bookings": 14378,
+      "hotel_nights": 184,
+      "revenue": 1402712.1400000001,
+      "penalties": 141219.97499999998,
+      "net": 1261492.165,
+      "walks": 255,
+      "occupied_nights": 16727
+    },
+    "candidate": {
+      "all_checks_passed": true,
+      "bookings": 14378,
+      "hotel_nights": 184,
+      "revenue": 1491038.2399999998,
+      "penalties": 156444.675,
+      "net": 1334593.5649999997,
+      "walks": 325,
+      "occupied_nights": 17576
+    }
+  },
+  "candidate_gain": 73101.39999999967,
+  "revenue_gain": 88326.09999999963,
+  "penalty_change": 15224.700000000012,
+  "extra_walks": 70,
+  "original_carry_matches_conditional_oracle": true,
+  "incoming_occupancy_identical": false,
+  "changed_hotel_nights": 8,
+  "net_incoming_room_night_difference": -15,
+  "carry_changes": [
+    {
+      "hotel": "Downtown Hotel",
+      "date": "2016-10-01",
+      "carry_original": 113,
+      "carry_candidate": 102,
+      "carried_in": 113,
+      "difference": -11
+    },
+    {
+      "hotel": "Downtown Hotel",
+      "date": "2016-10-02",
+      "carry_original": 57,
+      "carry_candidate": 58,
+      "carried_in": 57,
+      "difference": 1
+    },
+    {
+      "hotel": "Downtown Hotel",
+      "date": "2016-10-03",
+      "carry_original": 23,
+      "carry_candidate": 24,
+      "carried_in": 23,
+      "difference": 1
+    },
+    {
+      "hotel": "Downtown Hotel",
+      "date": "2016-10-04",
+      "carry_original": 7,
+      "carry_candidate": 8,
+      "carried_in": 7,
+      "difference": 1
+    },
+    {
+      "hotel": "Seaside Hotel",
+      "date": "2016-10-02",
+      "carry_original": 74,
+      "carry_candidate": 72,
+      "carried_in": 74,
+      "difference": -2
+    },
+    {
+      "hotel": "Seaside Hotel",
+      "date": "2016-10-03",
+      "carry_original": 69,
+      "carry_candidate": 67,
+      "carried_in": 69,
+      "difference": -2
+    },
+    {
+      "hotel": "Seaside Hotel",
+      "date": "2016-10-04",
+      "carry_original": 61,
+      "carry_candidate": 59,
+      "carried_in": 61,
+      "difference": -2
+    },
+    {
+      "hotel": "Seaside Hotel",
+      "date": "2016-10-05",
+      "carry_original": 47,
+      "carry_candidate": 46,
+      "carried_in": 47,
+      "difference": -1
+    }
+  ],
+  "hotel_comparison": [
+    {
+      "hotel": "Downtown Hotel",
+      "net_gain": 76879.53500000003,
+      "extra_walks": 57
+    },
+    {
+      "hotel": "Seaside Hotel",
+      "net_gain": -3778.1350000000093,
+      "extra_walks": 13
+    }
+  ],
+  "input_sha256": {
+    "artifacts\\simulate_confirm\\stay_value_decisions.csv": "c91acb15e2740fc2ce8865ddfa70032888c470a6a3ab82a7c4ac780d6f6da2f4",
+    "artifacts\\gap_diagnostics\\improvements\\candidate_q4\\stay_value_decisions.csv": "6e304fcada64c5f3c3a48db586fa93b41d2c936863ac9f0f16397fc13069bf46"
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "original": {
+    "model": {
+      "layout": "combined",
+      "calibration": "isotonic"
+    },
+    "policy": {
+      "load_target": 1.0,
+      "price_mult": 1.0,
+      "rate_scale": null,
+      "demand_scale": 1.0,
+      "margin": 0.0,
+      "raw_cap": 2.5,
+      "use_prices": true,
+      "price_when_full": false,
+      "risk": "mc",
+      "draws": 200,
+      "tail": 21,
+      "logit_noise": 0.0,
+      "analog_weeks": [
+        -1,
+        0,
+        1
+      ],
+      "cheapest": "stay_value",
+      "p_floor": 0.03,
+      "walk_penalty": 2.5,
+      "seed": 2026
+    }
+  },
+  "improved": {
+    "model": {
+      "layout": "combined",
+      "calibration": "context"
+    },
+    "replay": {
+      "s2_model": "artifacts/cancellation_s2_context",
+      "rolling_probabilities": "artifacts/rolling_context_2016/p_show.csv"
+    },
+    "policy": {
+      "load_target": 1.1,
+      "price_mult": 0.85,
+      "rate_scale": null,
+      "demand_scale": 1.0,
+      "margin": 0.0,
+      "raw_cap": 4.0,
+      "use_prices": true,
+      "price_when_full": false,
+      "risk": "mc",
+      "draws": 200,
+      "tail": 21,
+      "logit_noise": 0.0,
+      "analog_weeks": [
+        -1,
+        0,
+        1
+      ],
+      "cheapest": "stay_value",
+      "p_floor": 0.03,
+      "walk_penalty": 2.5,
+      "seed": 2026
+    }
+  },
+  "original_rolling_calibration": "sigmoid",
+  "original_s2_and_q4_calibration": "isotonic"
+}

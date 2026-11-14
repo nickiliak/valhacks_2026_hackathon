@@ -1,0 +1,81 @@
+{
+  "packaged_at_utc": "2026-11-14T14:57:25.866585+00:00",
+  "baseline_commit": "09fa7f96b5d9b27f0474a88cc404cd1c317a8e0a",
+  "baseline_commit_description": "Parent commit before context calibration and policy improvements",
+  "result_kind": "Historical development; not independent confirmation or official 2017 evaluation",
+  "selection": "Context calibration and policy settings selected using overlapping Jan-Sep rolling and Jul-Sep S2 replays; Q4 had already been inspected diagnostically before this work.",
+  "s2_q4_tree_training": [
+    "2015-07-01",
+    "2016-04-01"
+  ],
+  "s2_q4_calibration": [
+    "2016-04-01",
+    "2016-07-01"
+  ],
+  "final_tree_training": [
+    "2015-07-01",
+    "2016-10-01"
+  ],
+  "final_calibration": [
+    "2016-10-01",
+    "2017-01-01"
+  ],
+  "date_interval_convention": "Start inclusive, end exclusive",
+  "final_bundle_used_for_q4_validation": false,
+  "q4_original_and_candidate_incoming_occupancy_equal": false,
+  "q4_incoming_room_night_change": -15,
+  "deposit_feature_used": false,
+  "official_2017_evaluated": false,
+  "checks": {
+    "distributable_tests_passed": 66,
+    "test_files": [
+      "tests/test_cancellation.py",
+      "tests/test_context_calibration.py",
+      "tests/test_experiments.py",
+      "tests/test_policy.py",
+      "tests/test_preprocessing.py",
+      "tests/test_risksim_regression.py",
+      "tests/test_simulator.py",
+      "tests/test_splits.py"
+    ],
+    "prior_local_suite_passed": 78,
+    "ignored_hindsight_tests_in_prior_local_suite": 12,
+    "solution_rehearsal_requests": 44247,
+    "solution_rehearsal_seconds": 52.0,
+    "solution_rehearsal_normal_input_fallbacks": 0,
+    "unknown_hotel_edge_case_intentionally_uses_fallback": true,
+    "public_s2_and_q4_cli_reproduce_selected_net_revenue": true,
+    "q4_financial_rows_checked": 14378,
+    "q4_hotel_nights_checked": 184
+  },
+  "sha256": {
+    "data/train.csv": "27ea41bc2b72b649b72bf77ae2bd9e494b01aef04b89b70b9e45dd57b51506cd",
+    "config/policy.json": "6c3f3fd1e4b04475833ae83a4edcebf196854ed4447421e9663fff42bf4f88fe",
+    "scripts/solution.py": "e9424d9729e0674220a63253cc5dc92a3b7fa6e74127969d259aa8c4e0835001",
+    "scripts/simulate.py": "3503ca6f58493f8763f0f8767127f55ed2ccb7c1a58845653a519baa65c8ce5a",
+    "scripts/train_cancel_model.py": "a21537a9ee9c91ae4da1f976171d402571597f4b14beacef671c15b9e52a67f2",
+    "scripts/rolling_probabilities.py": "35378cb0d653b485b02da324a28b90f8774754c8992ca5149482ed187c204f1d",
+    "scripts/build_final.py": "3023457cc395b1553b786b76fc23c5a16782b12a4fa8927d241d264f4927330c",
+    "src/hackathon/calibration.py": "b1812bf55191b53442d63f4ce04cff1018af016cbb7bc519621d843f0c8135ba",
+    "src/hackathon/cancellation.py": "0abc95c547335a9143f0dbe834b16f8e4377f4e1bb827d5ec51c849c8ba86caf",
+    "src/hackathon/policy.py": "d9497740d1e34e56061da483925976780c00e03ee257b2bb5a203bd4ad5fcf1b",
+    "src/hackathon/experiments.py": "21a86d8202146abc8df089ba207b6aa3bd253cd568b10f2051a83d3b23548134",
+    "src/hackathon/simulator.py": "8212db4e17a8ba58e706330004c19cbf59f675dd5606a52887b3737400517cd0",
+    "artifacts/cancellation_s2_context/model.json": "3021e99373190c484442c48b584f73527b85c5e9c6a6c5d8b78123c9c22be7e0",
+    "artifacts/cancellation_s2_context/model_0.cbm": "4c18b0c326ec1465048a99915b492f5d649bcd65f433b3e6c9d7eba2d4eafda6",
+    "artifacts/rolling_context_2016/p_show.csv": "bfe99ff139c04da18272fde40191949091cfd767e4536a6701650e77a44c2a37",
+    "artifacts/final/demand.json": "3e70f16e750af93d950726e784a5a2672374957c890edee53415c2660217edec",
+    "artifacts/final/demand.parquet": "7bdd60dfc5504e99598b68d206f34bef08d826259aa41371adba2cbaa4bba75f",
+    "artifacts/final/metrics.json": "cbf347010e5ed3bddb71556bff8c1ce4f3fb43388072acb90449db873deeafdf",
+    "artifacts/final/model.json": "d3e23c53b4ca3ac7d6dc0086564e1117c875ac452d924db90b4580adb975eaa6",
+    "artifacts/final/model_0.cbm": "72bcd56f98285f5de1a5c7c73788995694354ea5d869c68084dd1d8c1d55c97d",
+    "artifacts/final/policy.json": "bade0e5cfaa4eec8f72574734bf458cf0e856ffb7d871b188268a0c14bf1dc8b",
+    "artifacts/improvement_results/hindsight_summary.json": "8c3cea993b6eb94debb5fc35438f043fa69b04f2cbc2f110a6ffa0681dcc740a",
+    "artifacts/improvement_results/q4_financial_checks.json": "2a2cbecff0a041a88069572667b86a5a5b557f673345c99424a8f4e9c95a9505",
+    "artifacts/improvement_results/q4_hotels.csv": "f407e80f6f06fe989cd1ab69e5c70b700f913bb1b7305b191c953a1ab999716d",
+    "artifacts/improvement_results/q4_months.csv": "578ee508546d70d1adbbf56777063fbf8d3d12fd4e407e54bc8ccd61fa4f6e86",
+    "artifacts/improvement_results/replay_comparison.csv": "b0ae1997dfa2e10f9dd3d9e21f19bc4d21cc0498d4367184acfe5292fd213a7c",
+    "artifacts/improvement_results/settings.json": "fc9b9fc7b9945101d5a25613ef6a73d0cd6f6ab9130cc1ae3dc9dc22bb158aea"
+  },
+  "fingerprint_note": "Includes permitted local input and regenerable replay artifacts that are not committed; hashes identify the files used here."
+}

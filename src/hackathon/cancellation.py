@@ -40,7 +40,7 @@ class ProbabilityCalibration:
     parameters: dict | None = None
 
     @classmethod
-    def fit(cls, method: str, probability, labels):
+    def fit(cls, method: str, probability, labels, *, rows=None):
         p = np.clip(np.asarray(probability), EPSILON, 1 - EPSILON)
         y = np.asarray(labels, dtype=int)
         if method == "raw":
@@ -54,18 +54,37 @@ class ProbabilityCalibration:
         if method == "isotonic":
             fit = IsotonicRegression(out_of_bounds="clip").fit(p, y)
             return cls(method, {"x": fit.X_thresholds_.tolist(), "y": fit.y_thresholds_.tolist()})
+        if method == "context":
+            from hackathon.calibration import ContextCalibrator
+
+            if rows is None:
+                raise ValueError("Context calibration requires booking features")
+            return cls(method, ContextCalibrator.fit(p, rows, y).parameters)
         raise ValueError(f"Unknown calibration method: {method}")
 
-    def transform(self, probability) -> np.ndarray:
+    def transform(self, probability, *, rows=None) -> np.ndarray:
         p = np.clip(np.asarray(probability, dtype=float), EPSILON, 1 - EPSILON)
         if self.method == "sigmoid":
             logits = self.parameters["slope"] * np.log(p / (1 - p)) + self.parameters["intercept"]
             p = 1 / (1 + np.exp(-np.clip(logits, -700, 700)))
         elif self.method == "isotonic":
             p = np.interp(p, self.parameters["x"], self.parameters["y"])
+        elif self.method == "context":
+            from hackathon.calibration import ContextCalibrator
+
+            if rows is None:
+                raise ValueError("Context calibration requires booking features")
+            p = ContextCalibrator(self.parameters).transform(p, rows)
         elif self.method != "raw":
             raise ValueError(f"Unknown calibration method: {self.method}")
         return np.clip(p, EPSILON, 1 - EPSILON)
+
+    def transform_one(self, probability: float, booking: dict) -> float:
+        if self.method == "context":
+            from hackathon.calibration import ContextCalibrator
+
+            return ContextCalibrator(self.parameters).transform_one(probability, booking)
+        return float(self.transform([probability])[0])
 
 
 class CancellationModel:
@@ -99,7 +118,7 @@ class CancellationModel:
         return probability
 
     def p_cancel(self, rows: pd.DataFrame, *, state: GroupCounter | None = None) -> np.ndarray:
-        return self.calibration.transform(self._raw(self.features.make_features(rows, state=state)))
+        return self.calibration.transform(self._raw(self.features.make_features(rows, state=state)), rows=rows)
 
     def p_show(self, rows: pd.DataFrame, *, state: GroupCounter | None = None) -> np.ndarray:
         return 1 - self.p_cancel(rows, state=state)
@@ -110,7 +129,7 @@ class CancellationModel:
         if model is None:
             model = self.models[str(booking["hotel"])]
         raw = model.predict_proba([[values[i] for i in _MODEL_INDEX]], thread_count=1)[0, 1]
-        return float(self.calibration.transform([raw])[0])
+        return self.calibration.transform_one(raw, booking)
 
     def save(self, directory: str | Path) -> None:
         directory = Path(directory)
@@ -188,7 +207,7 @@ def train_cancellation_model(rows: pd.DataFrame, *, split_name="S2", layout="aut
     # A custom ChronologicalSplit (rolling refits) overrides the named one.
     split = split or get_split(split_name)
     if calibration == "auto" and split.tuning is None:
-        raise ValueError("S1/Final require --calibration raw, sigmoid, or isotonic frozen before this fit")
+        raise ValueError("S1/Final require an explicit calibration method frozen before this fit")
     if layout not in {"auto", "combined", "per_hotel"}:
         raise ValueError("layout must be auto, combined, or per_hotel")
     fit_rows, validation_rows = split.training_parts(rows)
@@ -220,7 +239,8 @@ def train_cancellation_model(rows: pd.DataFrame, *, split_name="S2", layout="aut
     methods = ["raw", "sigmoid"] if calibration == "auto" else [calibration]
     if calibration == "auto" and len(calibration_rows) >= 2000:
         methods.append("isotonic")
-    calibrators = {method: ProbabilityCalibration.fit(method, cal_raw, calibration_rows.cancelled)
+    calibrators = {method: ProbabilityCalibration.fit(method, cal_raw, calibration_rows.cancelled,
+                                                     rows=calibration_rows)
                    for method in methods}
     report = {"split": split.to_dict(), "seed": seed,
               "rows": {"internal_fit": len(fit_rows), "internal_validation": len(validation_rows),
@@ -236,10 +256,10 @@ def train_cancellation_model(rows: pd.DataFrame, *, split_name="S2", layout="aut
         request_raw = raw[len(commitments):]
         for method, calibrator in calibrators.items():
             report["calibration_candidates"][method] = probability_metrics(
-                requests.cancelled, calibrator.transform(request_raw))
+                requests.cancelled, calibrator.transform(request_raw, rows=requests))
         chosen = min(calibrators, key=lambda method: report["calibration_candidates"][method]["log_loss"])
         model.calibration = calibrators[chosen]
-        report["tuning"] = diagnostic_report(population, model.calibration.transform(raw), split.tuning.start)
+        report["tuning"] = diagnostic_report(population, model.calibration.transform(raw, rows=population), split.tuning.start)
         report["calibration_selection_population"] = "Tuning requests booked on/after replay start; commitments excluded"
     else:
         model.calibration = calibrators[calibration]
