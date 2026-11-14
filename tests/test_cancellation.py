@@ -15,7 +15,7 @@ from hackathon.cancellation import (
     CancellationModel, ProbabilityCalibration, cache_replay_probabilities,
     probability_metrics, train_cancellation_model,
 )
-from hackathon.preprocessing import CATEGORICAL_FEATURES, FeatureBuilder, GroupCounter
+from hackathon.preprocessing import MODEL_CATEGORICAL, MODEL_FEATURES, FeatureBuilder, GroupCounter
 from hackathon.splits import Period
 
 
@@ -52,9 +52,9 @@ class CancellationTests(unittest.TestCase):
         features = FeatureBuilder().fit(train)
         estimator = CatBoostClassifier(
             iterations=8, depth=2, learning_rate=0.2, random_seed=42, thread_count=1,
-            cat_features=list(CATEGORICAL_FEATURES), allow_writing_files=False, verbose=False,
+            cat_features=list(MODEL_CATEGORICAL), allow_writing_files=False, verbose=False,
         )
-        estimator.fit(features.make_features(train), train.cancelled)
+        estimator.fit(features.make_features(train)[list(MODEL_FEATURES)], train.cancelled)
         cls.model = CancellationModel(features, {"all": estimator}, metadata={"test_fixture": True})
 
     def test_batch_matches_commitments_then_stream_with_shared_state(self):

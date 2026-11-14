@@ -30,6 +30,13 @@ NUMERIC_FEATURES = (
     "special_requests", "is_free", "block_size_so_far",
 )
 FEATURE_COLUMNS = CATEGORICAL_FEATURES + NUMERIC_FEATURES
+# Season labels are still built, but the cancellation model does not see them.
+# With one or two years of history they memorise that year's cancellation level
+# instead of guest behaviour; out of time, dropping them cut log loss from 0.58
+# to 0.49 and removed a 7-point bias (scripts/analysis/calibration_check.py).
+EXCLUDED_FROM_MODEL = ("arrival_month", "booking_month", "arrival_week")
+MODEL_FEATURES = tuple(c for c in FEATURE_COLUMNS if c not in EXCLUDED_FROM_MODEL)
+MODEL_CATEGORICAL = tuple(c for c in CATEGORICAL_FEATURES if c not in EXCLUDED_FROM_MODEL)
 _DERIVED_NUMERIC = {
     "arrival_week", "weekend_share", "total_guests", "has_kids",
     "rate_vs_typical", "stay_value", "is_free", "block_size_so_far",

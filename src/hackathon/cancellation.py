@@ -13,11 +13,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import brier_score_loss, log_loss, roc_auc_score
 
 from hackathon.contracts import policy_inputs
-from hackathon.preprocessing import CATEGORICAL_FEATURES, FEATURE_COLUMNS, FeatureBuilder, GroupCounter
+from hackathon.preprocessing import (CATEGORICAL_FEATURES, FEATURE_COLUMNS, MODEL_CATEGORICAL,
+                                     MODEL_FEATURES, FeatureBuilder, GroupCounter)
 from hackathon.splits import Period, get_split, replay_population
 
 EPSILON = 1e-7
-ARTIFACT_VERSION = 1
+ARTIFACT_VERSION = 2
+_MODEL_COLUMNS = list(MODEL_FEATURES)
+_MODEL_INDEX = [FEATURE_COLUMNS.index(c) for c in MODEL_FEATURES]
 
 
 def probability_metrics(y, probability) -> dict:
@@ -83,13 +86,15 @@ class CancellationModel:
     def _raw(self, features: pd.DataFrame) -> np.ndarray:
         if features.empty:
             return np.empty(0)
+        hotels = features.hotel.to_numpy()
+        features = features[_MODEL_COLUMNS]
         if "all" in self.models:
             return self.models["all"].predict_proba(features, thread_count=1)[:, 1]
         probability = np.empty(len(features))
-        for hotel in features.hotel.unique():
+        for hotel in pd.unique(hotels):
             if hotel not in self.models:
                 raise ValueError(f"No cancellation model for hotel {hotel!r}")
-            positions = np.flatnonzero(features.hotel.to_numpy() == hotel)
+            positions = np.flatnonzero(hotels == hotel)
             probability[positions] = self.models[hotel].predict_proba(features.iloc[positions], thread_count=1)[:, 1]
         return probability
 
@@ -104,7 +109,7 @@ class CancellationModel:
         model = self.models.get("all")
         if model is None:
             model = self.models[str(booking["hotel"])]
-        raw = model.predict_proba([values], thread_count=1)[0, 1]
+        raw = model.predict_proba([[values[i] for i in _MODEL_INDEX]], thread_count=1)[0, 1]
         return float(self.calibration.transform([raw])[0])
 
     def save(self, directory: str | Path) -> None:
@@ -119,6 +124,7 @@ class CancellationModel:
             checksums[filename] = hashlib.sha256((directory / filename).read_bytes()).hexdigest()
         payload = {"version": ARTIFACT_VERSION, "feature_columns": list(FEATURE_COLUMNS),
                    "categorical_features": list(CATEGORICAL_FEATURES),
+                   "model_features": _MODEL_COLUMNS,
                    "features": self.features.to_dict(), "models": files, "checksums": checksums,
                    "calibration": {"method": self.calibration.method, "parameters": self.calibration.parameters},
                    "metadata": self.metadata}
@@ -130,7 +136,8 @@ class CancellationModel:
         payload = json.loads((directory / "model.json").read_text(encoding="utf-8"))
         if (payload["version"] != ARTIFACT_VERSION
                 or payload["feature_columns"] != list(FEATURE_COLUMNS)
-                or payload["categorical_features"] != list(CATEGORICAL_FEATURES)):
+                or payload["categorical_features"] != list(CATEGORICAL_FEATURES)
+                or payload.get("model_features") != _MODEL_COLUMNS):
             raise ValueError("Model artifact and feature schema versions do not match")
         models = {}
         for name, filename in payload["models"].items():
@@ -152,7 +159,7 @@ def _fit_models(x, y, *, layout, iterations, depth, learning_rate, seed, threads
         count = selected_iterations[key] if selected_iterations else iterations
         model = CatBoostClassifier(iterations=count, depth=depth, learning_rate=learning_rate,
                                    loss_function="Logloss", eval_metric="Logloss", random_seed=seed,
-                                   thread_count=threads, cat_features=list(CATEGORICAL_FEATURES),
+                                   thread_count=threads, cat_features=list(MODEL_CATEGORICAL),
                                    allow_writing_files=False, verbose=False)
         kwargs = {}
         if validation is not None:
@@ -160,25 +167,26 @@ def _fit_models(x, y, *, layout, iterations, depth, learning_rate, seed, threads
             vmask = np.ones(len(vx), dtype=bool) if key == "all" else vx.hotel.to_numpy() == key
             if not vmask.any():
                 raise ValueError(f"Internal validation contains no rows for {key}")
-            kwargs = {"eval_set": (vx.loc[vmask], vy[vmask]), "early_stopping_rounds": 75,
+            kwargs = {"eval_set": (vx.loc[vmask, _MODEL_COLUMNS], vy[vmask]), "early_stopping_rounds": 75,
                       "use_best_model": True}
         if len(np.unique(y[mask])) < 2:
             raise ValueError(f"Training needs both outcomes for {key}")
-        model.fit(x.loc[mask], y[mask], **kwargs)
+        model.fit(x.loc[mask, _MODEL_COLUMNS], y[mask], **kwargs)
         models[key] = model
     return models
 
 
 def train_cancellation_model(rows: pd.DataFrame, *, split_name="S2", layout="auto",
                              calibration="auto", iterations=800, depth=6, learning_rate=0.05,
-                             seed=2026, threads=4) -> tuple[CancellationModel, dict]:
+                             seed=2026, threads=4, split=None) -> tuple[CancellationModel, dict]:
     """Select on internal validation, refit train, calibrate, then choose on tune.
 
     Confirmation rows never enter feature fitting, early stopping, calibration,
     calibration selection, or the returned report. Final/S1 require a calibration
     method frozen beforehand because neither defines an independent tune window.
     """
-    split = get_split(split_name)
+    # A custom ChronologicalSplit (rolling refits) overrides the named one.
+    split = split or get_split(split_name)
     if calibration == "auto" and split.tuning is None:
         raise ValueError("S1/Final require --calibration raw, sigmoid, or isotonic frozen before this fit")
     if layout not in {"auto", "combined", "per_hotel"}:
@@ -237,7 +245,7 @@ def train_cancellation_model(rows: pd.DataFrame, *, split_name="S2", layout="aut
         model.calibration = calibrators[calibration]
         report["calibration_selection_population"] = "Explicit pre-frozen method; no holdout selection"
     report["selected_calibration"] = model.calibration.method
-    report["feature_columns"] = list(FEATURE_COLUMNS)
+    report["feature_columns"] = _MODEL_COLUMNS
     model.metadata = report
     return model, report
 
