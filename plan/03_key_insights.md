@@ -9,7 +9,7 @@ Rough replay of 2016 (both hotels, our reconstruction of the rules, 2015 in-hous
 |---|---|---|---|
 | Accept everyone | **−€715k** | **−€903k** | 10,968 / 6,343 |
 | Accept until bookings = rooms (no overbooking) | €2.08M | €1.78M | 0 |
-| Overbook using the average show rate | €3.11M | €2.30M | 964 / 303 |
+| Overbook using the average show rate (rate taken from 2015 data only) | €3.03M | €2.30M | 1,550 / 274 |
 | Perfect hindsight, greedy (a lower bound on the ceiling) | €4.74M | €3.26M | 0 |
 
 Takeaways:

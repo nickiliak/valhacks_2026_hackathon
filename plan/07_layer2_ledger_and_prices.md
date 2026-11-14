@@ -13,15 +13,15 @@ blocks[t]          = list of (p_show, rooms_in_block, value) for group blocks co
 ```
 - A long-lead group-block booking might add ~0.25; a direct, short-lead booking adds ~0.9. **We count probabilities, not bookings.**
 - Updated after every accept. Never learns who cancelled.
-- **Arrival vs stay:** walks only happen on the arrival night, so the overflow risk check uses arrival night t₀ with in-house guests from earlier arrivals. Later nights of the stay enter through the minimum price (displacement).
+- **Arrival vs stay:** a guest can only be walked on their arrival night, but a seated guest occupies rooms on every night of the stay and can cause *other* arrivals to be walked later. Tool 2 simulates the whole effect; Tool 3 protects capacity for future unknown requests.
 
 ## Tool 2: the candidate's effect on already-accepted bookings, by simulation
 Output: **`delta(booking)` = E[net revenue with the candidate] − E[net revenue without it]**, counting only bookings already accepted (commitments + accepted so far). This single number already contains the candidate's own expected revenue, the risk that it is walked, and the walks it causes among others. **It is not a "walk cost" to subtract from p × v again** (that would double count; see 08).
 
 How:
-1. Window = every night of the candidate's stay, t₀ … t₀+nights−1 (not just arrival: a Monday guest seated for two nights can force a Tuesday arrival to be walked, a concrete penalty on a booking we already hold).
+1. Window: start at the candidate's arrival night t₀ from a valid prior occupancy state (in-house guests on t₀ come from earlier arrivals in the same draw, so simulate from the earliest accepted arrival whose stay can still be in house on t₀). Continue past the candidate's last night **until the "with" and "without" occupancy states are identical** (a walked multi-night guest frees rooms after the candidate has left, which changes later nights), with a cap (e.g. 14 nights beyond the stay, or the horizon). A Monday guest seated for two nights can force a Tuesday arrival to be walked, a concrete penalty on a booking we already hold.
 2. Draw show/no-show for every accepted booking whose stay touches the window. Version 1: independent coin per booking. **Upgrade (after B works): one coin per block** (Insight 4).
-3. Walk through the window night by night: in-house guests keep rooms; arrivals compete for `capacity[t] − in-house`; if short, walk the cheapest arrivals (active "cheapest" reading); walked guests free their later nights.
+3. Walk through the window night by night: in-house guests keep rooms; arrivals compete for `capacity[t] − in-house`; if short, walk the cheapest arrivals (active "cheapest" reading); walked guests free all their later nights.
 4. Net = Σ seated stay values − 2.5 × Σ walked stay values. Do it with and without the candidate on the **same draws**; average over ~200–500 draws.
 
 Speed: cache per-night draws; recompute only for nights whose ledger changed since the last call; vectorise with numpy. Fallback if too slow: arrival-night-only check with a normal approximation of Σp (blocks as units of variance n²p(1−p)).

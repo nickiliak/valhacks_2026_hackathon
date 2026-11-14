@@ -14,7 +14,7 @@ If the three disagree, the model silently gets garbage in 2017. Test it: run the
 | Numeric missing values | Keep as NaN. Don't fill with 0 | Tree models handle NaN natively; 0 can be a real value |
 | Categorical columns | Convert to strings; missing → `"_MISSING_"`. `agent`/`company`: normalise `304.0` and `304` to `"304"` | train.csv has floats, the `decide()` dict may not. NaN for agent/company means "none", which is fine as a category |
 | Dates | Parse both date columns to datetime (strings in train.csv, Timestamps in 2017). Derive `arrival_month`, `arrival_week`, `arrival_weekday`, `booking_month`, `booking_weekday`. Keep `days_ahead` | Season and weekday matter |
-| Exclude from features | `booking_id`, `cancelled`, **`arrival_year`** (2017 unseen), `arrival_day` (noise), the raw date columns | Avoid meaningless or unseen inputs |
+| Exclude from features | `booking_id`, `cancelled`, the raw date columns. **Default-excluded but worth a quick comparison:** `arrival_day` (probably noise; cheap to test on S2) and `arrival_year` (2017 is unseen; a tree would route it with the latest year seen, which could help or hurt; the only honest test is S1, train 2015 → test 2016) | Avoid meaningless or unseen inputs; test rather than assume when cheap |
 | Scaling / one-hot | None | Tree models don't need it |
 | Unusual records (€5,400 rate, 40 adults) | Keep | Trees are robust; they are real bookings |
 | `meal` | Map `Undefined` → `SC` | Same meaning |
@@ -25,7 +25,7 @@ If the three disagree, the model silently gets garbage in 2017. Test it: run the
 | Unseen categories in 2017 | CatBoost handles them; test the path explicitly with a made-up agent ID | New agents/companies will appear |
 
 ## Feature list (first version)
-Categorical: `hotel`, `arrival_month`, `arrival_weekday`, `booking_month`, `meal`, `country`, `sales_segment`, `sales_channel`, `room_type`, `agent`, `company`, `guest_type`.
+Categorical: `hotel`, `arrival_month`, `arrival_weekday`, `booking_month`, `booking_weekday`, `meal`, `country`, `sales_segment`, `sales_channel`, `room_type`, `agent`, `company`, `guest_type`.
 Numeric: `days_ahead`, `arrival_week`, `nights`, `weekend_nights`, `weekday_nights`, `weekend_share`, `adults`, `children`, `babies`, `total_guests`, `has_kids`, `returning_guest`, `past_cancellations`, `past_stays`, `amendments`, `waitlist_days`, `nightly_rate`, `rate_vs_typical`, `stay_value`, `special_requests`, `is_free`, `block_size_so_far`.
 
 Optional variants, only if time allows (the main model uses every permitted feature, `country` included; we are maximising revenue): (a) without `agent` + `company`, to see how much we depend on IDs that may be new in 2017; (b) without `amendments` + `special_requests`, as a talking point for the interviewer.

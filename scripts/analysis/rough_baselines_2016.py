@@ -45,7 +45,8 @@ for h, rooms in ROOMS.items():
     for label, weight in (("FCFS bookings<=rooms", None), ("cap expected shows (avg p)", "p")):
         booked = np.zeros(400)
         acc = np.zeros(len(g), bool)
-        pbar = 1 - g.cancelled.mean()
+        # average show rate from data available before 2016 (arrivals in 2015), not from the evaluated year
+        pbar = 1 - df[(df.hotel == h) & (df.arrival_date < base)].cancelled.mean()
         for k, row in enumerate(g.itertuples(index=False)):
             i = (row.arrival_date - base).days
             w_ = 1.0 if weight is None else pbar

@@ -4,13 +4,13 @@
 The official scorer is locked. Without our own copy we cannot measure anything. Every approach, knob and chart depends on it. A rough version exists at `scripts/analysis/rough_baselines_2016.py` (run: `uv run python scripts/analysis/rough_baselines_2016.py data/train.csv`); it produced the baseline table in 03. The real one adds commitments, in-house guests from before the start date, and rule switches.
 
 ## Specification
-Input: a `Solution` class with the official interface, a start date T, an end date, the hotel's rooms, the historical bookings with `cancelled`.
+Input: a `Solution` class with the official interface, a start date T, an end date, rooms per hotel, the historical bookings with `cancelled`.
 
-Per hotel:
-1. Build `commitments` (arrivals in [T, end] with `booking_date < T`, without `cancelled`, dates as Timestamps) and `capacity` (rooms − guests who arrived before T and are still staying, per night).
-2. Instantiate `Solution(commitments, capacity)`.
-3. For every booking with `booking_date ≥ T` and arrival in [T, end], in `booking_date` order (tie-break by `booking_id`), call `decide(dict_row)` and record the answer.
-4. Night by night from T: in-house count = seated guests still staying. Arrivals = accepted (or committed) bookings arriving tonight with `cancelled == 0`. If arrivals > rooms − in-house, walk the **cheapest** arrivals. Seated guests occupy rooms for all their nights. Walked guests free all their nights.
+Exactly as the official interface does, **one `Solution` instance for both hotels**:
+1. Build `commitments` for **both hotels in one DataFrame** (arrivals in [T, end] with `booking_date < T`; **`cancelled` column removed**; dates as Timestamps) and `capacity = {hotel: Series}` (rooms − guests who arrived before T and are still staying, per night, indexed by date).
+2. Instantiate `Solution(commitments, capacity)` once.
+3. For every booking of **either hotel** with `booking_date ≥ T` and arrival in [T, end], in global `booking_date` order (tie-break by `booking_id`), call `decide(dict_row)` with **`cancelled` removed from the dict** and record the answer. The `Solution` sees `booking["hotel"]` and routes internally.
+4. Scoring is then done per hotel. Night by night from T: in-house count = seated guests still staying. Arrivals = accepted (or committed) bookings arriving tonight with `cancelled == 0`. If arrivals > rooms − in-house, walk the **cheapest** arrivals. Seated guests occupy rooms for all their nights. Walked guests free all their nights.
 5. Score = Σ stay value of seated − 2.5 × Σ stay value of walked.
 
 ## Switches

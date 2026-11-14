@@ -15,14 +15,14 @@ features (04) → CatBoost predicts p_cancel → calibrate → p_show = 1 − p_
 | LightGBM | Second opinion | Already installed. Only blend if it clearly helps on S2 |
 | Logistic regression | Baseline + pitch | "Each factor adds or subtracts points." Needs NaN filling and one-hot; keep it simple |
 
-Train per hotel or with `hotel` as a feature; try both, pick by log loss on the calibration period.
+Train per hotel or with `hotel` as a feature; try both, pick by log loss on the **internal validation slice** (last ~2 months of the training period, held out from fitting).
 
 ## Settings
-- Loss: log loss (binary). Early stopping on the calibration period.
+- Loss: log loss (binary). Early stopping on the **internal validation slice**, never on the calibration or confirm periods. The calibration period is used only to fit the calibrator.
 - **No SMOTE, no oversampling, no class weights**: they distort probabilities.
 - Modest depth (6–8), learning rate ~0.05, a few hundred to a few thousand trees with early stopping.
 - Optional variants (04), only if time allows: without `agent` + `company`; without `amendments` + `special_requests`. No "without country" variant: `country` stays in.
-- Expect weaker numbers than published results for this dataset: `deposit` was one of its top-two features and is gone. Log loss on the calibration period is the yardstick, not a target AUC.
+- Expect weaker numbers than published results for this dataset: `deposit` was one of its top-two features and is gone. Log loss on the internal validation slice (model choice) and on the tune period (calibration choice) are the yardsticks, not a target AUC.
 
 ## Calibration
 - Fit on the calibration period (data the model didn't train on). Try sigmoid/Platt first, isotonic if the period has several thousand rows.
