@@ -24,7 +24,7 @@ Note S1 and S2 overlap (Jul–Dec 2016 in both); a win on both is not two indepe
 - **Score** with the simulator (09) using the real `cancelled` outcomes.
 
 ## Horizon
-The real test probably doesn't cover all of 2017. Derive the horizon from the latest `arrival_date` in `commitments` at start-up, not from outside knowledge. Handle stays that run past the last capacity date.
+Use each hotel's **`capacity` index** (the nights the organisers supply) as the horizon. Not the latest commitment arrival (later requests can arrive beyond it) and not outside knowledge of the dataset's range. Policy and simulator use one convention for stays extending past the last capacity date (08, 09).
 
 ## Model checks on the decision-like population
 The bookings we decide on are made *during* the year for arrival in that year, so lead times are ≤ ~365 days and mostly shorter; training data has many longer leads. Check calibration separately on bookings with `days_ahead ≤ 365`, per hotel, and per lead-time band.

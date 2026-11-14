@@ -13,7 +13,7 @@ Explainability: in your presentation you should explain to a non technical stake
 Team clarifications (assumptions we agreed on):
 
 - Deposit type does not affect profit. A cancelled booking earns 0 regardless of its deposit type; no deposit money is counted. Profit = nightly_rate x nights for guests who show up and are seated, minus walk penalties.
-- The `deposit` column is NOT available to us (decided 14 Nov ~12:45). It has been dropped from `data/train.csv` and must not be used anywhere: not as a feature, not for rules, not for analysis that feeds the solution.
+- The `deposit` column is NOT available to us (decided 14 Nov ~12:45). It has been dropped from `data/train.csv`. It cannot be a feature or a rule input, and feature choices are justified only by the permitted columns' own relationship to `cancelled`.
 - The two hotels are completely independent. When one hotel is full, guests are NOT moved to the other hotel. Capacity, overbooking and walk penalties are handled separately per hotel, and an overflow guest is always walked to an external hotel at 2.5x their stay value.
 
 There will also be a technical interviewer aside from the non technical stakeholders so we should be ready for technical questions just in case.

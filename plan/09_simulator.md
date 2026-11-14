@@ -17,7 +17,7 @@ Per hotel:
 | Switch | Options | Default |
 |---|---|---|
 | cheapest = | `nightly_rate` / `stay_value` | stay_value (matches "2.5× their stay value" wording); report both |
-| horizon handling | count full stay / truncate at end | count full |
+| horizon handling (stays past the last capacity date) | count full stay value, ignore nights beyond the index / truncate | count full, ignore beyond (same in 08) |
 | walked guest frees later nights | yes / no | yes |
 
 ## Outputs per run
@@ -35,7 +35,7 @@ Net revenue, revenue, penalties, walks, accept rate, average occupancy, by hotel
 Rough 2016 numbers (no in-house, all 2016 bookings as decisions): see 03 Insight 1. Expect them to shift once commitments and in-house guests are included; the ordering should not.
 
 ## Checks before trusting it
-- Accept-all produces many walks; reject-all produces zero walks and only commitment revenue.
-- Perfect hindsight ≥ every other strategy.
-- Results change only slightly between the "cheapest" readings.
+- **Hand-calculable unit scenarios** (the real test): e.g. 3 rooms, 4 arrivals of known values on one night, one in-house guest, one cancellation → assert the exact revenue, penalty and who is walked; a two-night stay that blocks the next night's arrival; a walked guest freeing later nights; a stay past the horizon. Each under both "cheapest" readings.
+- Sanity (not assertions): accept-all produces many walks; reject-all yields only commitment revenue (commitments alone *can* already overflow a night, so walks may be non-zero); greedy hindsight is a lower bound on the optimum, so a strategy slightly above it is possible, if unlikely.
+- Report the difference between the two "cheapest" readings as measured sensitivity; do not assume it is small.
 - A full replay with the real `Solution` runs in minutes, not hours.

@@ -15,12 +15,18 @@ blocks[t]          = list of (p_show, rooms_in_block, value) for group blocks co
 - Updated after every accept. Never learns who cancelled.
 - **Arrival vs stay:** walks only happen on the arrival night, so the overflow risk check uses arrival night t₀ with in-house guests from earlier arrivals. Later nights of the stay enter through the minimum price (displacement).
 
-## Tool 2: overflow risk, block-aware
-P(no free room on night t₀ if this guest shows) and the expected cost of the walk it causes. Compute by **simulation**, not a formula:
-1. Draw show/no-show for every accepted booking covering t₀: independent coin per single booking, **one coin per block** (Insight 4).
-2. Count in-house + arrivals; if arrivals exceed free rooms, walk the cheapest arrivals (by the active "cheapest" reading).
-3. Compare net revenue with and without the candidate booking; average over ~200–500 draws.
-This gives `expected_marginal_walk_cost` directly, including the "cheapest guest is bumped" effect (Insight 3). Precompute per night and refresh only when that night's ledger changes, so `decide()` stays fast. A normal approximation of Σp is the fallback if speed is a problem, with blocks as single units of variance n²p(1−p).
+## Tool 2: the candidate's effect on already-accepted bookings, by simulation
+Output: **`delta(booking)` = E[net revenue with the candidate] − E[net revenue without it]**, counting only bookings already accepted (commitments + accepted so far). This single number already contains the candidate's own expected revenue, the risk that it is walked, and the walks it causes among others. **It is not a "walk cost" to subtract from p × v again** (that would double count; see 08).
+
+How:
+1. Window = every night of the candidate's stay, t₀ … t₀+nights−1 (not just arrival: a Monday guest seated for two nights can force a Tuesday arrival to be walked, a concrete penalty on a booking we already hold).
+2. Draw show/no-show for every accepted booking whose stay touches the window. Version 1: independent coin per booking. **Upgrade (after B works): one coin per block** (Insight 4).
+3. Walk through the window night by night: in-house guests keep rooms; arrivals compete for `capacity[t] − in-house`; if short, walk the cheapest arrivals (active "cheapest" reading); walked guests free their later nights.
+4. Net = Σ seated stay values − 2.5 × Σ walked stay values. Do it with and without the candidate on the **same draws**; average over ~200–500 draws.
+
+Speed: cache per-night draws; recompute only for nights whose ledger changed since the last call; vectorise with numpy. Fallback if too slow: arrival-night-only check with a normal approximation of Σp (blocks as units of variance n²p(1−p)).
+
+The simulation covers bookings we already hold. Capacity for **future, unknown** requests is protected by the minimum prices (Tool 3), not by this simulation.
 
 ## Tool 3: the minimum price per night
 Idea: a room-night on a busy August Saturday is worth more than one on a quiet January Tuesday, because selling it cheaply now forfeits a better sale later.
@@ -40,5 +46,5 @@ Track, per hotel and arrival month, the rate and count of requests seen so far i
 
 ## Outputs
 - `expected_used[hotel][t]`, `raw_bookings[hotel][t]`, `blocks[hotel][t]`
-- `marginal_walk_cost(hotel, booking)`
+- `delta(hotel, booking)` = expected net-revenue improvement from accepting
 - `min_price(hotel, t)`

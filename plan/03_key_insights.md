@@ -49,13 +49,15 @@ Consequences:
 ## Insight 4: Group blocks come or cancel together.
 31% of rows are duplicates forming 5,553 blocks; 96.5% of blocks share one outcome. A 20-room block at 50% is not "about 10 rooms"; it is **0 or 20**. Summing p × (1 − p) as if independent badly understates the chance of overflow on nights with blocks. In the ledger and the risk simulation, **one coin flip per block**, not per row. Rows of a block arrive consecutively in `decide()` (same booking date), so we can recognise them as they come.
 
-## Insight 5: The `deposit` column is gone; the strongest cancellation signal must come from proxies. Keep guardrails.
-Until 12:45 the plan relied on "Non Refund bookings cancel 99.7%". That column is **no longer available** (dropped from the data). What we measured before dropping it: those bookings are 96% PRT, 99.8% with zero special requests, 98.8% inside duplicate blocks, median lead 238 days, concentrated in Groups (46% of Groups rows), Offline TA/TO and a few agents (agent 1: 6,862 rows, 73% cancel). A depth-6 tree identifies them from the remaining columns with AUC 0.76.
+## Insight 5: The `deposit` column is gone. Features are justified by permitted data only. Keep guardrails.
+Until 12:45 the plan leaned on a deposit-type pattern. That column is **no longer available** (dropped from the data) and is not used to justify anything. What the permitted columns show directly against `cancelled` (02):
+- **Block size:** rows in a block of 10+ identical bookings cancel 67% vs 25% for single bookings; 90.7% of blocks share one outcome. So `block_size_so_far` (04) is a **required** feature and blocks are one unit of risk (Insight 4).
+- **Lead time** (85% cancel beyond a year), **segment** (Groups 70% at Downtown), **special requests** (47% → 19%), **country** (PRT 64% vs 24% at Downtown), **past cancellations**, and **agent** (some agents cancel >70%) carry the rest.
 
 Consequences:
-- The model will still flag that profile (PRT + no requests + long lead + group/offline + certain agents + in a block) as likely to cancel, but at roughly **70–80%**, not 99.7%. Such bookings count as ~0.2–0.3 of a room instead of ~0. We accept fewer bookings on those nights: **less replay revenue, more robustness**.
-- **`country`, `agent`, `sales_segment` and the block feature become the key features.** `block_size_so_far` (04) moves from "if quick" to **required**. Unseen 2017 agents matter more; test that path.
-- The old risk "the Non Refund quirk breaks in 2017 and we never notice" is much reduced, because we no longer bet on near-zero probabilities. Drift in ordinary cancel rates (02) remains, and we still get **no feedback during the run**.
+- No booking will be rated near-certain to cancel; long-lead group blocks will land around 60–80%, counting as ~0.2–0.4 of a room. Fewer accepts on those nights: **less replay revenue, more robustness**.
+- Unseen 2017 agents matter; test that path. The variant without `agent` + `company` (04) tells us how much we depend on IDs.
+- Drift in cancel rates between years (02) remains, and we still get **no feedback during the run**.
 
 Guardrails (all cheap, all kept):
 1. **Hard cap on raw bookings per night** regardless of model probabilities (≤ k × rooms, k tuned; start around 2).
@@ -68,8 +70,8 @@ See the lead-time table in 02: 0–7 days ahead → ~10% cancel, €100+; a year
 ## Insight 7: 2017 will be pricier and busier than 2016; use the commitments as a thermometer.
 Same-month rates rose 35–55% from 2015 to 2016. Minimum prices learned from 2016 would be too low for 2017. At start-up our code sees the 2017 commitments; comparing them with the 2016 commitments analog (**like with like**: commitments are long-lead and cheaper than average) gives a scale factor for prices and volume before any decision is made.
 
-## Insight 8: Nationality stays in the model, with a defence ready.
-`country` is a strong predictor, and after dropping `deposit` it is the main proxy for the long-lead group blocks that mostly cancel, so removing it would cost more than before. Using nationality to *refuse* service would be discrimination. But under Insight 2 the model never sets priority: a Portuguese guest's booking counts as *fewer* expected rooms, which makes it **easier** to accept, not harder. Rejections happen when a night is full and the rate is too low, whoever the guest is. We also train a version without `country` so we can show the comparison if asked.
+## Insight 8: Nationality stays in the model; verbal defence ready if asked.
+`country` is a strong predictor (02) and we are maximising revenue, so it stays in. No variant without it is trained. If a judge raises fairness: under Insight 2 the model never sets priority; a Portuguese guest's booking counts as *fewer* expected rooms, which makes it **easier** to accept, not harder. Rejections happen when a night is full and the rate is too low, whoever the guest is.
 
 ## Insight 9: There is no honest full-year test with 18 months of data.
 Only Jul–Dec 2016 can be tested with a full 12 months of history behind it (05). We tune on part of it and confirm on the rest. All reported numbers are "our reconstruction of the scorer", stated as such.

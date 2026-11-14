@@ -21,11 +21,13 @@ Train per hotel or with `hotel` as a feature; try both, pick by log loss on the 
 - Loss: log loss (binary). Early stopping on the calibration period.
 - **No SMOTE, no oversampling, no class weights**: they distort probabilities.
 - Modest depth (6–8), learning rate ~0.05, a few hundred to a few thousand trees with early stopping.
-- Variants (04): without `country`; without `amendments` + `special_requests`; without `agent` + `company`.
+- Optional variants (04), only if time allows: without `agent` + `company`; without `amendments` + `special_requests`. No "without country" variant: `country` stays in.
 - Expect weaker numbers than published results for this dataset: `deposit` was one of its top-two features and is gone. Log loss on the calibration period is the yardstick, not a target AUC.
 
 ## Calibration
-- Fit on the calibration period (data the model didn't train on). Try sigmoid/Platt first, isotonic if the period has several thousand rows. Keep calibration only if it lowers log loss / Brier on the confirm period.
+- Fit on the calibration period (data the model didn't train on). Try sigmoid/Platt first, isotonic if the period has several thousand rows.
+- **Decide raw vs calibrated on tuning data only** (the Jul–Sep 2016 tune period of S2, or a held-out slice of the calibration period), then freeze. The Oct–Dec confirm period is evaluated **once**, at the end, and never used for any choice.
+- Early stopping and model selection use an internal validation slice taken from the end of the training period, not the calibration or confirm periods.
 - Check a calibration plot per hotel and per lead-time band, and on the decision-like slice (`days_ahead ≤ 365`).
 - Expect drift in 2017 (02: cancel rates moved several points between years). Nothing can detect it during the run; the guardrails in 03 cover it.
 
@@ -44,4 +46,4 @@ Rows of a block are near-duplicates and share outcomes, so the model's rows are 
 ## Explainability hooks
 - SHAP summary chart: top drivers of cancellation (lead time, segment, special requests, country, agent, block size, past cancellations).
 - SHAP for one booking, converted to plain-language reason codes.
-- Importance comparison with and without `country`.
+- Plain-language reason codes for the demo.

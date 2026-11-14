@@ -53,7 +53,7 @@ The last row shows **drift**: cancellation behaviour changed between years even 
 | `sales_channel` | Direct, Corporate, TA/TO, GDS, Undefined | Coarser |
 | `agent`, `company` | IDs (284 / 297 values); NaN = none | Floats in train.csv (`304.0`); normalise to strings. 94% have no company |
 | `guest_type` | Transient, Transient-Party, Group, Contract | |
-| ~~`deposit`~~ | **Dropped from the data (14 Nov).** Not available to the solution | Recorded for understanding only: in the original data, "Non Refund" bookings (15.6% of Downtown) cancelled 99.7%. Those bookings are 96% PRT, 99.8% with zero special requests, 98.8% inside duplicate blocks, median lead 238 days, mostly Groups / Offline TA / a few agents (agent 1: 73% cancel). A depth-6 tree recovers "was Non Refund" from the other columns with AUC 0.76, so the model keeps part of the signal through those proxies |
+| ~~`deposit`~~ | **Dropped from the data (14 Nov).** Not available to the solution and not used to justify anything | Feature choices rest on the permitted columns' own relationship to `cancelled` (see "Groups and duplicates" below) |
 | `waitlist_days` | Days on waiting list | Mostly 0 |
 
 ### What they asked for
@@ -82,9 +82,12 @@ The last row shows **drift**: cancellation behaviour changed between years even 
 
 Late bookers pay more and show up. That's why rooms must be held back for them.
 
-## Groups and duplicates
-- **24,066 rows (31%) are exact duplicates** of another row (ignoring `booking_id`). They form 5,553 blocks covering 29,813 rows.
-- **96.5% of blocks share one outcome:** all cancelled or all showed. Their cancellations are **not independent**.
+## Groups and duplicates (permitted columns only)
+- **24,066 rows (31%) are exact duplicates** of another row (ignoring `booking_id`). They form 5,553 blocks covering 29,813 rows; **96.5% of those blocks share one outcome** (all cancelled or all showed).
+- With the practical block key `(hotel, booking_date, arrival_date, nights, agent, nightly_rate, room_type, sales_segment)`: 45% of rows are in a block of ≥2; **90.7% of blocks share one outcome**; 6,943 blocks.
+- Cancel rate by block size: single 25%; 2 rooms 28%; 3–4 rooms 29%; 5–9 rooms 38%; **10+ rooms 67%**.
+- Dropping `booking_date` from the key merges unrelated bookings: shared outcome falls to 79%. Keep it in the key.
+- Conclusion: block size is a strong, permitted predictor of cancellation, and block outcomes are **not independent**.
 
 ## The 2016 analog of the 2017 set-up
 - 2016 arrivals: 56,290. Of those, **12,043 were booked before 2016-01-01** (the "commitments" analog) and **44,247 were booked during 2016** (the "decisions" analog).
