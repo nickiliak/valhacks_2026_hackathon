@@ -1,6 +1,6 @@
 # Valhacks 2026 plan: Hilton booking accept/reject system
 
-**Status:** plan agreed by the team on 14 Nov 2026 ~12:30, after one independent review; updated ~12:45 when the `deposit` column was dropped from the data. Not yet implemented. Written to be self-contained: everything needed to understand, verify or execute it is in this folder plus the files it points to.
+**Status:** plan agreed by the team on 14 Nov 2026 ~12:30, after one independent review; updated ~12:45 when the `deposit` column was dropped from the data. Splits, preprocessing, historical simulator/baselines, and the S2 CatBoost cancellation model are now implemented; see the [repository README](../README.md) for commands, interfaces, measurements, and limitations. The ledger, risk simulation, prices, and final acceptance policy remain subsequent stages. October–December confirmation has not been evaluated. Written to be self-contained: everything needed to understand, verify or execute it is in this folder plus the files it points to.
 
 ## Read in this order
 | File | What it answers |

@@ -4,6 +4,8 @@ __pycache__/
 .env
 data/
 *.duckdb
+artifacts/
+catboost_info/
 /challenge_files/solution.py
 /challenge_files/train.csv
 /challenge_files/train copy.csv
