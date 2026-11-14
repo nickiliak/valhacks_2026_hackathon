@@ -4,3 +4,5 @@ __pycache__/
 .env
 data/
 *.duckdb
+/challenge_files/solution.py
+/challenge_files/train.csv
