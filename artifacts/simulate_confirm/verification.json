@@ -1,0 +1,45 @@
+{
+  "all_checks_passed": true,
+  "frozen_inputs_unchanged": true,
+  "final_bundle_unchanged": true,
+  "method": "Saved source rows, financial accounting, decision completeness, occupancy bounds, and aggregate reconciliation; no policy rerun",
+  "limitations": "Reconstructed scorer; no independent reseating audit of July-September carryover. Nightly-rate sensitivity changes both scorer and policy walk ordering.",
+  "reports": [
+    {
+      "reading": "stay_value",
+      "all_checks_passed": true,
+      "bookings_verified": 14378,
+      "revenue": 1402712.1400000001,
+      "penalties": 141219.97499999998,
+      "net_revenue": 1261492.165,
+      "walks": 255,
+      "seated": 4772,
+      "commitments": 4646,
+      "requests": 9732,
+      "accepted_requests": 4468,
+      "occupied_room_nights": 16727,
+      "available_room_nights": 20884,
+      "net_uplift_vs_average_rate": 193302.35499999998,
+      "net_uplift_percent": 18.09625529005936,
+      "walk_reduction_percent": 41.51376146788991
+    },
+    {
+      "reading": "nightly_rate",
+      "all_checks_passed": true,
+      "bookings_verified": 14378,
+      "revenue": 1395401.26,
+      "penalties": 151897.0,
+      "net_revenue": 1243504.26,
+      "walks": 237,
+      "seated": 4821,
+      "commitments": 4646,
+      "requests": 9732,
+      "accepted_requests": 4506,
+      "occupied_room_nights": 16581,
+      "available_room_nights": 20884,
+      "net_uplift_vs_average_rate": 218789.24499999988,
+      "net_uplift_percent": 21.351228565729553,
+      "walk_reduction_percent": 33.42696629213483
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "load_target": 1.0,
+  "price_mult": 1.0,
+  "rate_scale": null,
+  "demand_scale": 1.0,
+  "margin": 0.0,
+  "raw_cap": 2.5,
+  "use_prices": true,
+  "price_when_full": false,
+  "risk": "mc",
+  "draws": 200,
+  "tail": 21,
+  "logit_noise": 0.0,
+  "analog_weeks": [
+    -1,
+    0,
+    1
+  ],
+  "cheapest": "stay_value",
+  "p_floor": 0.03,
+  "walk_penalty": 2.5,
+  "seed": 2026
+}

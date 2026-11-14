@@ -10,8 +10,9 @@ Add packages with `uv add <pkg>` (commit `pyproject.toml` + `uv.lock`). Skills: 
 The whole pipeline is implemented: chronological splits, shared preprocessing,
 historical replay, a calibrated CatBoost cancellation model, nightly minimum
 prices, the acceptance policy, and `scripts/solution.py`, which the organisers'
-`evaluate(Solution)` can run. Settings are **not tuned yet** and the
-October–December confirmation has **not been run**.
+`evaluate(Solution)` can run. The current settings completed the frozen
+October–December confirmation on 14 November 2026: **€1.261M net**, 18.1% above
+average-rate overbooking. The official 2017 evaluation is still pending.
 
 ## Run the pipeline
 
@@ -68,7 +69,7 @@ Every decision records a reason (`simulate.py` writes them to `*_decisions.csv`)
 |---|---|---|
 | `year` | All of 2016 from 1 Jan, reported for Jan–Sep arrivals. Each request is scored by a model trained only on arrivals before the quarter it was booked in | The 2017 look-alike: few commitments, long lead times |
 | `s2` | Jul–Sep 2016 from 1 Jul | The plan's tuning period. Commitments alone overfill it (reject-all still walks 2,429 guests), so it mostly tests displacement |
-| `confirm` | Oct–Dec 2016, policy state carried on from 1 Jul | Untouched. `simulate.py --stream confirm --frozen`, once, after settings are frozen |
+| `confirm` | Oct–Dec 2016, policy state carried on from 1 Jul | Completed with frozen settings; results in `artifacts/simulate_confirm`. Do not tune on this period |
 
 Results with the default settings, our reconstruction of the scorer, "cheapest" = lowest stay value:
 
@@ -80,7 +81,29 @@ Results with the default settings, our reconstruction of the scorer, "cheapest" 
 | **Our policy** | **€4.61M** | 313 | **€0.44M** |
 | Greedy hindsight (lower bound of the ceiling) | €5.91M | 164 | €0.49M |
 
-Known weaknesses, in order of money at stake:
+Frozen October–December confirmation (S2 model, continuous July–December state,
+reconstructed scorer, cheapest = lowest stay value):
+
+| Policy | Net revenue | Walked guests |
+|---|---:|---:|
+| Accept all | €42,368 | 3,873 |
+| Simple capacity cap | €787,100 | 215 |
+| Average-rate overbooking | €1,068,190 | 436 |
+| **Our policy** | **€1,261,492** | **255** |
+
+Our policy earns **€193,302 more (+18.1%)** with **41.5% fewer walks** than
+average-rate overbooking. Occupancy is 80.1%. The alternate nightly-rate reading
+earns €1,243,504 with 237 walks; that sensitivity run changes both the scorer's
+and policy's walk ordering. The primary frozen candidate uses stay value.
+
+The saved checks reconcile all 14,378 booking rows, financial totals, hotel/month
+aggregates and occupancy bounds. Config, source, data and model hashes stayed
+unchanged. See `artifacts/simulate_confirm/summary.csv`, `verification.json`,
+`frozen_config.json` and `run_manifest.json`. These checks do not independently
+reconstruct seating carried over from July–September. The deployment model was
+not used for confirmation because its calibration already includes October–December.
+
+Known weaknesses from tuning, in order of money at stake:
 
 - **Downtown is under-filled in the `year` stream (73% occupancy).** The early
   rolling models had four months of history and rate Downtown guests far too
@@ -114,7 +137,7 @@ and separate hotel models there, then refits the selected model on its full
 training period with frozen tree counts. Price references are fitted again on
 that training period. Calibration uses only the designated calibration period.
 Raw, sigmoid, and isotonic probabilities are compared on S2 tuning requests;
-confirmation is not scored. For S1 or Final, supply an already chosen method,
+model selection does not score confirmation. For S1 or Final, supply an already chosen method,
 for example `--split Final --calibration sigmoid`. Do this deployment fit after
 the final system's confirmation; it intentionally uses October–December as
 calibration and cannot provide an untouched S2 confirmation result.
@@ -173,13 +196,12 @@ Both meanings of cheapest are reported by default. Use `--horizon truncate` to
 test truncated stay values; the default counts full values and ignores capacity
 beyond the supplied dates.
 
-For later confirmation, freeze the entire policy first, replay continuously from
-July through December, and report October–December using `--report-start
-2016-10-01`. Do not restart policy state at October. The equivalent baseline
-command (not run during initial implementation) is:
+The completed confirmation froze the settings before replaying continuously from
+July through December and reporting October–December. Policy state was not
+restarted at October. The recorded command was (do not use reruns to tune):
 
 ```powershell
-uv run python scripts/replay.py --start 2016-07-01 --end 2016-12-31 --report-start 2016-10-01 --output artifacts/replay_s2_confirmation
+uv run python -u scripts/simulate.py --stream confirm --frozen --config artifacts/simulate_confirm/frozen_config.json --output artifacts/simulate_confirm
 ```
 
 Calibration (validated on July–September 2016 requests, never on October–December).
@@ -192,7 +214,7 @@ separate hotel models there (0.485 vs 0.511 with sigmoid), and isotonic
 calibration beat sigmoid and raw (0.477 / 0.485 / 0.505), so the Final model
 uses combined + isotonic. Seaside still underpredicts cancellation on the whole
 July–September population (22% vs 32%), which errs towards caution.
-October–December remains unevaluated.
+The subsequent frozen-policy October–December confirmation is reported above.
 
 Our reconstructed scorer shows substantial rule sensitivity on July–September:
 accept-all earns net −€1.660M with cheapest stay-value ordering versus −€0.521M
