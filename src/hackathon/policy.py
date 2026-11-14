@@ -42,7 +42,7 @@ class PolicyParams:
     rate_scale: float | None = None  # None: measured from the commitments (thermometer)
     demand_scale: float | None = 1.0  # None: measured from the commitments
     margin: float = 0.0             # required revenue difference, as a share of p_show x stay value
-    raw_cap: float = 2.5            # guardrail: bookings per night <= raw_cap x free rooms
+    raw_cap: float = 2.5            # guardrail: bookings held per night <= raw_cap x hotel rooms
     use_prices: bool = True
     price_when_full: bool = False   # True: on a full night demand the top expected future rate
     risk: str = "mc"                # "mc" or "none"
@@ -284,6 +284,7 @@ class _Hotel:
         self.day0 = self.dates[0]
         self.T = len(self.dates)
         self.cap = capacity.to_numpy(dtype=float)
+        self.rooms = float(self.cap.max())       # the emptiest night approximates the hotel size
         self.used = np.zeros(self.T)             # expected rooms used per night
         self.raw = np.zeros(self.T, dtype=int)   # bookings held per night
         self.tables: list[tuple[np.ndarray, np.ndarray, int]] = [(np.empty(0, int), np.empty(0), 0)] * self.T
@@ -422,7 +423,7 @@ class AcceptancePolicy:
             return self._note(booking, False, "outside the planning horizon", p_show=p)
         if not rate > 0:
             return self._note(booking, False, "free booking: no revenue, only risk", p_show=p)
-        if (hotel.raw[t0:stop] + 1 > self.params.raw_cap * hotel.cap[t0:stop]).any():
+        if (hotel.raw[t0:stop] + 1 > self.params.raw_cap * hotel.rooms).any():
             return self._note(booking, False, "booking-count guardrail reached", p_show=p)
         covered = stop - t0
         minimum = 0.0

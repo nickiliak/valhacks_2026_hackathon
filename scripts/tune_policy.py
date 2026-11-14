@@ -20,27 +20,15 @@ from pathlib import Path
 
 import pandas as pd
 
-from hackathon.contracts import load_history
-from hackathon.experiments import Bench, cached_p_show, line
+from hackathon.experiments import build_stream, line
 from hackathon.policy import PolicyParams
-from hackathon.splits import Period
 
 BENCH = None
 
 
-def build(stream: str, data_path: str) -> Bench:
-    data = load_history(data_path)
-    if stream == "s2":
-        p_show = cached_p_show(data, "artifacts/cancellation_s2", Period("2016-07-01", "2017-01-01"))
-        return Bench(data, "2016-07-01", "2016-09-30", "2016-07-01", p_show)
-    frame = pd.read_csv("artifacts/rolling_2016/p_show.csv")
-    return Bench(data, "2016-01-01", "2016-12-31", "2016-01-01", dict(zip(frame.booking_id, frame.p_show)),
-                 report=("2016-01-01", "2016-09-30"))
-
-
 def start(stream: str, data_path: str) -> None:
     global BENCH
-    BENCH = build(stream, data_path)
+    BENCH = build_stream(stream, data_path)
 
 
 def run(job: tuple[dict, str]) -> dict:
@@ -58,6 +46,8 @@ def parse(value: str):
         return None
     if value in ("True", "False"):
         return value == "True"
+    if ":" in value:  # analog_weeks=-1:0:1
+        return tuple(int(v) for v in value.split(":"))
     try:
         return int(value)
     except ValueError:

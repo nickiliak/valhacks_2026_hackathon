@@ -1,0 +1,1223 @@
+{
+  "version": 2,
+  "feature_columns": [
+    "hotel",
+    "arrival_month",
+    "arrival_weekday",
+    "booking_month",
+    "booking_weekday",
+    "meal",
+    "country",
+    "sales_segment",
+    "sales_channel",
+    "room_type",
+    "agent",
+    "company",
+    "guest_type",
+    "days_ahead",
+    "arrival_week",
+    "nights",
+    "weekend_nights",
+    "weekday_nights",
+    "weekend_share",
+    "adults",
+    "children",
+    "babies",
+    "total_guests",
+    "has_kids",
+    "returning_guest",
+    "past_cancellations",
+    "past_stays",
+    "amendments",
+    "waitlist_days",
+    "nightly_rate",
+    "rate_vs_typical",
+    "stay_value",
+    "special_requests",
+    "is_free",
+    "block_size_so_far"
+  ],
+  "categorical_features": [
+    "hotel",
+    "arrival_month",
+    "arrival_weekday",
+    "booking_month",
+    "booking_weekday",
+    "meal",
+    "country",
+    "sales_segment",
+    "sales_channel",
+    "room_type",
+    "agent",
+    "company",
+    "guest_type"
+  ],
+  "model_features": [
+    "hotel",
+    "arrival_weekday",
+    "booking_weekday",
+    "meal",
+    "country",
+    "sales_segment",
+    "sales_channel",
+    "room_type",
+    "agent",
+    "company",
+    "guest_type",
+    "days_ahead",
+    "nights",
+    "weekend_nights",
+    "weekday_nights",
+    "weekend_share",
+    "adults",
+    "children",
+    "babies",
+    "total_guests",
+    "has_kids",
+    "returning_guest",
+    "past_cancellations",
+    "past_stays",
+    "amendments",
+    "waitlist_days",
+    "nightly_rate",
+    "rate_vs_typical",
+    "stay_value",
+    "special_requests",
+    "is_free",
+    "block_size_so_far"
+  ],
+  "features": {
+    "version": 1,
+    "feature_columns": [
+      "hotel",
+      "arrival_month",
+      "arrival_weekday",
+      "booking_month",
+      "booking_weekday",
+      "meal",
+      "country",
+      "sales_segment",
+      "sales_channel",
+      "room_type",
+      "agent",
+      "company",
+      "guest_type",
+      "days_ahead",
+      "arrival_week",
+      "nights",
+      "weekend_nights",
+      "weekday_nights",
+      "weekend_share",
+      "adults",
+      "children",
+      "babies",
+      "total_guests",
+      "has_kids",
+      "returning_guest",
+      "past_cancellations",
+      "past_stays",
+      "amendments",
+      "waitlist_days",
+      "nightly_rate",
+      "rate_vs_typical",
+      "stay_value",
+      "special_requests",
+      "is_free",
+      "block_size_so_far"
+    ],
+    "rate_medians": [
+      {
+        "hotel": "Downtown Hotel",
+        "month": 1,
+        "median": 77.6
+      },
+      {
+        "hotel": "Downtown Hotel",
+        "month": 2,
+        "median": 79.0
+      },
+      {
+        "hotel": "Downtown Hotel",
+        "month": 3,
+        "median": 84.45
+      },
+      {
+        "hotel": "Downtown Hotel",
+        "month": 7,
+        "median": 62.8
+      },
+      {
+        "hotel": "Downtown Hotel",
+        "month": 8,
+        "median": 75.0
+      },
+      {
+        "hotel": "Downtown Hotel",
+        "month": 9,
+        "median": 95.0
+      },
+      {
+        "hotel": "Downtown Hotel",
+        "month": 10,
+        "median": 88.5
+      },
+      {
+        "hotel": "Downtown Hotel",
+        "month": 11,
+        "median": 72.25
+      },
+      {
+        "hotel": "Downtown Hotel",
+        "month": 12,
+        "median": 77.5
+      },
+      {
+        "hotel": "Seaside Hotel",
+        "month": 1,
+        "median": 45.0
+      },
+      {
+        "hotel": "Seaside Hotel",
+        "month": 2,
+        "median": 53.0
+      },
+      {
+        "hotel": "Seaside Hotel",
+        "month": 3,
+        "median": 54.0
+      },
+      {
+        "hotel": "Seaside Hotel",
+        "month": 7,
+        "median": 123.0
+      },
+      {
+        "hotel": "Seaside Hotel",
+        "month": 8,
+        "median": 154.0
+      },
+      {
+        "hotel": "Seaside Hotel",
+        "month": 9,
+        "median": 79.5
+      },
+      {
+        "hotel": "Seaside Hotel",
+        "month": 10,
+        "median": 52.5
+      },
+      {
+        "hotel": "Seaside Hotel",
+        "month": 11,
+        "median": 42.0
+      },
+      {
+        "hotel": "Seaside Hotel",
+        "month": 12,
+        "median": 55.0
+      }
+    ],
+    "hotel_rate_medians": {
+      "Seaside Hotel": 65.0,
+      "Downtown Hotel": 80.0
+    },
+    "global_rate_median": 75.0
+  },
+  "models": {
+    "all": "model_0.cbm"
+  },
+  "checksums": {
+    "model_0.cbm": "ee0a084736308f87993f559dec8fa068f422afa96b5c90e0f902b49c61211544"
+  },
+  "calibration": {
+    "method": "isotonic",
+    "parameters": {
+      "x": [
+        0.00025683454847594674,
+        0.001804733373725635,
+        0.0018063384354043857,
+        0.002727291710919342,
+        0.0027308816603715284,
+        0.005808783424580561,
+        0.005816731568076726,
+        0.008225800590149364,
+        0.00822986905167859,
+        0.00857169449200884,
+        0.0085756835440279,
+        0.014173485862643309,
+        0.014194008858701167,
+        0.016974496191539793,
+        0.016978270019890267,
+        0.018418321140502722,
+        0.018428516134215814,
+        0.020636941732546595,
+        0.020665525589304463,
+        0.026299677081588976,
+        0.026316688300064194,
+        0.03128107728525493,
+        0.0312848117920089,
+        0.03588754175595083,
+        0.03591291082159202,
+        0.08561226956164031,
+        0.08564845638960544,
+        0.08583232632804683,
+        0.08585847690741776,
+        0.1568206090210175,
+        0.15682373924571988,
+        0.20800255787144437,
+        0.20800610372277917,
+        0.2180289956075918,
+        0.21840505285551265,
+        0.21877751921302246,
+        0.21894295142067727,
+        0.26871653643201804,
+        0.2687391191933696,
+        0.270562548045112,
+        0.2707356043530424,
+        0.30698972646755635,
+        0.30718193142135236,
+        0.31117309725129283,
+        0.311379253638472,
+        0.31182413006742554,
+        0.31184483812125163,
+        0.32611441629130217,
+        0.32621527849048426,
+        0.36752373869179167,
+        0.3676341765873224,
+        0.423901416308995,
+        0.42398616823675006,
+        0.4506792053684848,
+        0.45095937942235953,
+        0.48504500062891215,
+        0.4855614462817591,
+        0.4900937764188309,
+        0.49066481385828586,
+        0.6301148065209976,
+        0.6301212118679786,
+        0.6409767778427746,
+        0.6410925578262511,
+        0.6508974682722889,
+        0.650903995658171,
+        0.6595243303074144,
+        0.659548637267944,
+        0.6699058807187244,
+        0.6699665498291463,
+        0.6825808118463733,
+        0.6826058717956651,
+        0.6878590883403215,
+        0.6879015612439038,
+        0.7068104934689015,
+        0.7068242020884299,
+        0.7087876058043189,
+        0.7088087150651867,
+        0.8385727284285855,
+        0.8389378931436632,
+        0.8775037457940981,
+        0.8775345642964522,
+        0.9369849176825493,
+        0.9370354445009567,
+        0.9999007067586779
+      ],
+      "y": [
+        0.0,
+        0.0,
+        0.0022675736961451248,
+        0.0022675736961451248,
+        0.002881844380403458,
+        0.002881844380403458,
+        0.020356234096692113,
+        0.020356234096692113,
+        0.022988505747126436,
+        0.022988505747126436,
+        0.023863636363636365,
+        0.023863636363636365,
+        0.0330188679245283,
+        0.0330188679245283,
+        0.03669724770642202,
+        0.03669724770642202,
+        0.04678362573099415,
+        0.04678362573099415,
+        0.05555555555555555,
+        0.05555555555555555,
+        0.09251101321585903,
+        0.09251101321585903,
+        0.10588235294117647,
+        0.10588235294117647,
+        0.15241057542768277,
+        0.15241057542768277,
+        0.16666666666666666,
+        0.16666666666666666,
+        0.17407071622846781,
+        0.17407071622846781,
+        0.24431818181818188,
+        0.24431818181818188,
+        0.25609756097560976,
+        0.25609756097560976,
+        0.2857142857142857,
+        0.2857142857142857,
+        0.34805890227576974,
+        0.34805890227576974,
+        0.35,
+        0.35,
+        0.352,
+        0.352,
+        0.375,
+        0.375,
+        0.4,
+        0.4,
+        0.4444444444444444,
+        0.4444444444444444,
+        0.5,
+        0.5,
+        0.5170842824601367,
+        0.5170842824601367,
+        0.5225225225225224,
+        0.5225225225225224,
+        0.6315789473684211,
+        0.6315789473684211,
+        0.6774193548387096,
+        0.6774193548387096,
+        0.7018425460636515,
+        0.7018425460636515,
+        0.7142857142857143,
+        0.7142857142857143,
+        0.7285714285714285,
+        0.7285714285714285,
+        0.7377049180327869,
+        0.7377049180327869,
+        0.7653061224489796,
+        0.7653061224489796,
+        0.7927927927927928,
+        0.7927927927927928,
+        0.8085106382978723,
+        0.8085106382978723,
+        0.8787878787878788,
+        0.8787878787878788,
+        0.88,
+        0.88,
+        0.9115191986644408,
+        0.9115191986644408,
+        0.9495798319327731,
+        0.9495798319327731,
+        0.9927536231884058,
+        0.9927536231884058,
+        1.0,
+        1.0
+      ]
+    }
+  },
+  "metadata": {
+    "split": {
+      "name": "S2",
+      "train": {
+        "start": "2015-07-01",
+        "end": "2016-04-01"
+      },
+      "internal_validation": {
+        "start": "2016-02-01",
+        "end": "2016-04-01"
+      },
+      "calibration": {
+        "start": "2016-04-01",
+        "end": "2016-07-01"
+      },
+      "replay": {
+        "start": "2016-07-01",
+        "end": "2017-01-01"
+      },
+      "tuning": {
+        "start": "2016-07-01",
+        "end": "2016-10-01"
+      },
+      "confirmation": {
+        "start": "2016-10-01",
+        "end": "2017-01-01"
+      }
+    },
+    "seed": 2026,
+    "rows": {
+      "internal_fit": 24063,
+      "internal_validation": 8647,
+      "train": 32710,
+      "calibration": 16076
+    },
+    "model_selection": {
+      "combined": {
+        "metrics": {
+          "rows": 8647,
+          "cancel_rate": 0.32462125592691105,
+          "mean_p_cancel": 0.24980199715722137,
+          "log_loss": 0.40647441734400486,
+          "brier": 0.12691455941598614,
+          "auc": 0.8894910473327445
+        },
+        "iterations": {
+          "all": 337
+        }
+      }
+    },
+    "selected_layout": "combined",
+    "confirmation_evaluated": false,
+    "calibration_candidates": {
+      "raw": {
+        "rows": 4609,
+        "cancel_rate": 0.243219787372532,
+        "mean_p_cancel": 0.17436550145862353,
+        "log_loss": 0.5051670999991501,
+        "brier": 0.15217933187452742,
+        "auc": 0.7748265494438942
+      },
+      "sigmoid": {
+        "rows": 4609,
+        "cancel_rate": 0.243219787372532,
+        "mean_p_cancel": 0.24673242133586043,
+        "log_loss": 0.4849018590302046,
+        "brier": 0.1505536512659323,
+        "auc": 0.7748265494438942
+      },
+      "isotonic": {
+        "rows": 4609,
+        "cancel_rate": 0.243219787372532,
+        "mean_p_cancel": 0.24073185178504064,
+        "log_loss": 0.47740425709076695,
+        "brier": 0.14876958939350565,
+        "auc": 0.7745863989393481
+      }
+    },
+    "tuning": {
+      "all": {
+        "rows": 14968,
+        "cancel_rate": 0.3570283270978087,
+        "mean_p_cancel": 0.32279846107093974,
+        "log_loss": 0.45533248107368024,
+        "brier": 0.14627743830354514,
+        "auc": 0.8519751624400823
+      },
+      "requests": {
+        "rows": 4609,
+        "cancel_rate": 0.243219787372532,
+        "mean_p_cancel": 0.24073185178504064,
+        "log_loss": 0.47740425709076695,
+        "brier": 0.14876958939350565,
+        "auc": 0.7745863989393481
+      },
+      "lead_at_most_365": {
+        "rows": 14283,
+        "cancel_rate": 0.3347335993838829,
+        "mean_p_cancel": 0.30071268115928285,
+        "log_loss": 0.47321792050933303,
+        "brier": 0.15192102182284348,
+        "auc": 0.8347088698419526
+      },
+      "by_hotel": {
+        "Downtown Hotel": {
+          "rows": 10351,
+          "cancel_rate": 0.3725243937783789,
+          "mean_p_cancel": 0.3681761303071988,
+          "log_loss": 0.4122005848731852,
+          "brier": 0.13509808150836813,
+          "auc": 0.8765382284170078
+        },
+        "Seaside Hotel": {
+          "rows": 4617,
+          "cancel_rate": 0.3222871994801819,
+          "mean_p_cancel": 0.2210648127572043,
+          "log_loss": 0.5520312589752018,
+          "brier": 0.17134079593553073,
+          "auc": 0.8253842608343042
+        }
+      },
+      "by_lead_band": {
+        "0-7 days": {
+          "rows": 1679,
+          "cancel_rate": 0.11316259678379988,
+          "mean_p_cancel": 0.13777130827224232,
+          "log_loss": 0.3134338769799057,
+          "brier": 0.0888332751947905,
+          "auc": 0.7497578735286841
+        },
+        "8-30 days": {
+          "rows": 1857,
+          "cancel_rate": 0.2821755519655358,
+          "mean_p_cancel": 0.25311274348030094,
+          "log_loss": 0.5600256078861832,
+          "brier": 0.1768083070630489,
+          "auc": 0.7245809543989051
+        },
+        "31-90 days": {
+          "rows": 2925,
+          "cancel_rate": 0.3634188034188034,
+          "mean_p_cancel": 0.361794861910431,
+          "log_loss": 0.600885974435623,
+          "brier": 0.1982488589703233,
+          "auc": 0.7483938814917955
+        },
+        "91-180 days": {
+          "rows": 4086,
+          "cancel_rate": 0.368575624082232,
+          "mean_p_cancel": 0.3273459738486414,
+          "log_loss": 0.5596559668277197,
+          "brier": 0.18072546580157128,
+          "auc": 0.7907751423247578
+        },
+        "181-365 days": {
+          "rows": 3736,
+          "cancel_rate": 0.4009635974304068,
+          "mean_p_cancel": 0.3206491470911304,
+          "log_loss": 0.3073883216431049,
+          "brier": 0.10012893299628528,
+          "auc": 0.9517733504666932
+        },
+        "366-inf days": {
+          "rows": 685,
+          "cancel_rate": 0.8218978102189781,
+          "mean_p_cancel": 0.7833111537398406,
+          "log_loss": 0.0824014862423986,
+          "brier": 0.028602542820132828,
+          "auc": 0.9979981364470197
+        }
+      },
+      "calibration_bins": {
+        "all": [
+          {
+            "bin": 0,
+            "rows": 4983,
+            "mean_p_cancel": 0.01981874669587089,
+            "cancel_rate": 0.07244631747943006
+          },
+          {
+            "bin": 1,
+            "rows": 2712,
+            "mean_p_cancel": 0.1605509574844499,
+            "cancel_rate": 0.24225663716814158
+          },
+          {
+            "bin": 2,
+            "rows": 1138,
+            "mean_p_cancel": 0.2463148331439039,
+            "cancel_rate": 0.2530755711775044
+          },
+          {
+            "bin": 3,
+            "rows": 1309,
+            "mean_p_cancel": 0.35038394899002673,
+            "cancel_rate": 0.3819709702062643
+          },
+          {
+            "bin": 4,
+            "rows": 189,
+            "mean_p_cancel": 0.44164353170230214,
+            "cancel_rate": 0.3968253968253968
+          },
+          {
+            "bin": 5,
+            "rows": 1155,
+            "mean_p_cancel": 0.5123083601453032,
+            "cancel_rate": 0.5541125541125541
+          },
+          {
+            "bin": 6,
+            "rows": 334,
+            "mean_p_cancel": 0.6380819202307878,
+            "cancel_rate": 0.688622754491018
+          },
+          {
+            "bin": 7,
+            "rows": 1419,
+            "mean_p_cancel": 0.7123844999647212,
+            "cancel_rate": 0.6892177589852009
+          },
+          {
+            "bin": 8,
+            "rows": 134,
+            "mean_p_cancel": 0.8668067784866769,
+            "cancel_rate": 0.753731343283582
+          },
+          {
+            "bin": 9,
+            "rows": 1595,
+            "mean_p_cancel": 0.967514498994965,
+            "cancel_rate": 0.9492163009404389
+          }
+        ],
+        "Downtown Hotel": [
+          {
+            "bin": 0,
+            "rows": 2659,
+            "mean_p_cancel": 0.02294070712021816,
+            "cancel_rate": 0.03422339225272659
+          },
+          {
+            "bin": 1,
+            "rows": 1884,
+            "mean_p_cancel": 0.16229136309380396,
+            "cancel_rate": 0.17091295116772823
+          },
+          {
+            "bin": 2,
+            "rows": 943,
+            "mean_p_cancel": 0.2462696599198107,
+            "cancel_rate": 0.2513255567338282
+          },
+          {
+            "bin": 3,
+            "rows": 1071,
+            "mean_p_cancel": 0.350261245189391,
+            "cancel_rate": 0.3790849673202614
+          },
+          {
+            "bin": 4,
+            "rows": 148,
+            "mean_p_cancel": 0.44086760317238416,
+            "cancel_rate": 0.36486486486486486
+          },
+          {
+            "bin": 5,
+            "rows": 896,
+            "mean_p_cancel": 0.5122649918095706,
+            "cancel_rate": 0.5546875
+          },
+          {
+            "bin": 6,
+            "rows": 246,
+            "mean_p_cancel": 0.637733362676196,
+            "cancel_rate": 0.6829268292682927
+          },
+          {
+            "bin": 7,
+            "rows": 1028,
+            "mean_p_cancel": 0.7125706291096827,
+            "cancel_rate": 0.6741245136186771
+          },
+          {
+            "bin": 8,
+            "rows": 86,
+            "mean_p_cancel": 0.8666429760244704,
+            "cancel_rate": 0.7558139534883721
+          },
+          {
+            "bin": 9,
+            "rows": 1390,
+            "mean_p_cancel": 0.9702867811468475,
+            "cancel_rate": 0.9517985611510792
+          }
+        ],
+        "Seaside Hotel": [
+          {
+            "bin": 0,
+            "rows": 2324,
+            "mean_p_cancel": 0.016246761855793705,
+            "cancel_rate": 0.11617900172117039
+          },
+          {
+            "bin": 1,
+            "rows": 828,
+            "mean_p_cancel": 0.15659090414142696,
+            "cancel_rate": 0.40458937198067635
+          },
+          {
+            "bin": 2,
+            "rows": 195,
+            "mean_p_cancel": 0.24653328622246704,
+            "cancel_rate": 0.26153846153846155
+          },
+          {
+            "bin": 3,
+            "rows": 238,
+            "mean_p_cancel": 0.3509361160928875,
+            "cancel_rate": 0.3949579831932773
+          },
+          {
+            "bin": 4,
+            "rows": 41,
+            "mean_p_cancel": 0.4444444444444444,
+            "cancel_rate": 0.5121951219512195
+          },
+          {
+            "bin": 5,
+            "rows": 259,
+            "mean_p_cancel": 0.5124583911445945,
+            "cancel_rate": 0.5521235521235521
+          },
+          {
+            "bin": 6,
+            "rows": 88,
+            "mean_p_cancel": 0.6390562970311242,
+            "cancel_rate": 0.7045454545454546
+          },
+          {
+            "bin": 7,
+            "rows": 391,
+            "mean_p_cancel": 0.7118951374045668,
+            "cancel_rate": 0.7289002557544757
+          },
+          {
+            "bin": 8,
+            "rows": 48,
+            "mean_p_cancel": 0.8671002578981302,
+            "cancel_rate": 0.75
+          },
+          {
+            "bin": 9,
+            "rows": 205,
+            "mean_p_cancel": 0.9487170736724432,
+            "cancel_rate": 0.9317073170731708
+          }
+        ],
+        "0-7 days": [
+          {
+            "bin": 0,
+            "rows": 636,
+            "mean_p_cancel": 0.027534100145314908,
+            "cancel_rate": 0.03930817610062893
+          },
+          {
+            "bin": 1,
+            "rows": 761,
+            "mean_p_cancel": 0.16035675448933756,
+            "cancel_rate": 0.09329829172141918
+          },
+          {
+            "bin": 2,
+            "rows": 144,
+            "mean_p_cancel": 0.2462105473448321,
+            "cancel_rate": 0.2222222222222222
+          },
+          {
+            "bin": 3,
+            "rows": 98,
+            "mean_p_cancel": 0.34962010979363894,
+            "cancel_rate": 0.37755102040816324
+          },
+          {
+            "bin": 4,
+            "rows": 6,
+            "mean_p_cancel": 0.4370370370370371,
+            "cancel_rate": 0.3333333333333333
+          },
+          {
+            "bin": 5,
+            "rows": 24,
+            "mean_p_cancel": 0.5097071730044395,
+            "cancel_rate": 0.625
+          },
+          {
+            "bin": 6,
+            "rows": 4,
+            "mean_p_cancel": 0.6430390492359933,
+            "cancel_rate": 1.0
+          },
+          {
+            "bin": 7,
+            "rows": 4,
+            "mean_p_cancel": 0.7018425460636515,
+            "cancel_rate": 0.75
+          },
+          {
+            "bin": 9,
+            "rows": 2,
+            "mean_p_cancel": 0.9115191986644408,
+            "cancel_rate": 0.5
+          }
+        ],
+        "8-30 days": [
+          {
+            "bin": 0,
+            "rows": 560,
+            "mean_p_cancel": 0.023053829533800148,
+            "cancel_rate": 0.10357142857142858
+          },
+          {
+            "bin": 1,
+            "rows": 461,
+            "mean_p_cancel": 0.16158450455879103,
+            "cancel_rate": 0.2559652928416486
+          },
+          {
+            "bin": 2,
+            "rows": 213,
+            "mean_p_cancel": 0.24597570668152563,
+            "cancel_rate": 0.2300469483568075
+          },
+          {
+            "bin": 3,
+            "rows": 213,
+            "mean_p_cancel": 0.35080687619052053,
+            "cancel_rate": 0.3286384976525822
+          },
+          {
+            "bin": 4,
+            "rows": 26,
+            "mean_p_cancel": 0.4444444444444444,
+            "cancel_rate": 0.34615384615384615
+          },
+          {
+            "bin": 5,
+            "rows": 160,
+            "mean_p_cancel": 0.5105324216585607,
+            "cancel_rate": 0.44375
+          },
+          {
+            "bin": 6,
+            "rows": 53,
+            "mean_p_cancel": 0.6367684274593971,
+            "cancel_rate": 0.6037735849056604
+          },
+          {
+            "bin": 7,
+            "rows": 133,
+            "mean_p_cancel": 0.70972902829443,
+            "cancel_rate": 0.6466165413533834
+          },
+          {
+            "bin": 8,
+            "rows": 13,
+            "mean_p_cancel": 0.8571641124832612,
+            "cancel_rate": 0.6923076923076923
+          },
+          {
+            "bin": 9,
+            "rows": 25,
+            "mean_p_cancel": 0.9195403779570911,
+            "cancel_rate": 0.88
+          }
+        ],
+        "31-90 days": [
+          {
+            "bin": 0,
+            "rows": 748,
+            "mean_p_cancel": 0.02275972279781344,
+            "cancel_rate": 0.10828877005347594
+          },
+          {
+            "bin": 1,
+            "rows": 411,
+            "mean_p_cancel": 0.1564295956139252,
+            "cancel_rate": 0.40875912408759124
+          },
+          {
+            "bin": 2,
+            "rows": 273,
+            "mean_p_cancel": 0.2470471504660327,
+            "cancel_rate": 0.17216117216117216
+          },
+          {
+            "bin": 3,
+            "rows": 358,
+            "mean_p_cancel": 0.3503270987909057,
+            "cancel_rate": 0.2988826815642458
+          },
+          {
+            "bin": 4,
+            "rows": 55,
+            "mean_p_cancel": 0.4420922170214459,
+            "cancel_rate": 0.23636363636363636
+          },
+          {
+            "bin": 5,
+            "rows": 286,
+            "mean_p_cancel": 0.5124905876614305,
+            "cancel_rate": 0.4405594405594406
+          },
+          {
+            "bin": 6,
+            "rows": 84,
+            "mean_p_cancel": 0.6368924624177633,
+            "cancel_rate": 0.47619047619047616
+          },
+          {
+            "bin": 7,
+            "rows": 447,
+            "mean_p_cancel": 0.7141024562551496,
+            "cancel_rate": 0.5995525727069351
+          },
+          {
+            "bin": 8,
+            "rows": 55,
+            "mean_p_cancel": 0.8686759275540705,
+            "cancel_rate": 0.7454545454545455
+          },
+          {
+            "bin": 9,
+            "rows": 208,
+            "mean_p_cancel": 0.9264655787576211,
+            "cancel_rate": 0.8269230769230769
+          }
+        ],
+        "91-180 days": [
+          {
+            "bin": 0,
+            "rows": 1246,
+            "mean_p_cancel": 0.02276851934422099,
+            "cancel_rate": 0.11717495987158909
+          },
+          {
+            "bin": 1,
+            "rows": 649,
+            "mean_p_cancel": 0.16174317760175405,
+            "cancel_rate": 0.28043143297380585
+          },
+          {
+            "bin": 2,
+            "rows": 340,
+            "mean_p_cancel": 0.24622465948685462,
+            "cancel_rate": 0.25
+          },
+          {
+            "bin": 3,
+            "rows": 386,
+            "mean_p_cancel": 0.3504260402843731,
+            "cancel_rate": 0.30569948186528495
+          },
+          {
+            "bin": 4,
+            "rows": 65,
+            "mean_p_cancel": 0.44170940170940176,
+            "cancel_rate": 0.4153846153846154
+          },
+          {
+            "bin": 5,
+            "rows": 447,
+            "mean_p_cancel": 0.5130265487391965,
+            "cancel_rate": 0.5548098434004475
+          },
+          {
+            "bin": 6,
+            "rows": 110,
+            "mean_p_cancel": 0.6376630087684585,
+            "cancel_rate": 0.7
+          },
+          {
+            "bin": 7,
+            "rows": 575,
+            "mean_p_cancel": 0.71171844677824,
+            "cancel_rate": 0.7095652173913043
+          },
+          {
+            "bin": 8,
+            "rows": 49,
+            "mean_p_cancel": 0.8659292885432702,
+            "cancel_rate": 0.7346938775510204
+          },
+          {
+            "bin": 9,
+            "rows": 219,
+            "mean_p_cancel": 0.9377550895234781,
+            "cancel_rate": 0.817351598173516
+          }
+        ],
+        "181-365 days": [
+          {
+            "bin": 0,
+            "rows": 1689,
+            "mean_p_cancel": 0.013111718635452227,
+            "cancel_rate": 0.03019538188277087
+          },
+          {
+            "bin": 1,
+            "rows": 428,
+            "mean_p_cancel": 0.16192028639561176,
+            "cancel_rate": 0.2757009345794392
+          },
+          {
+            "bin": 2,
+            "rows": 144,
+            "mean_p_cancel": 0.2459962759124345,
+            "cancel_rate": 0.4513888888888889
+          },
+          {
+            "bin": 3,
+            "rows": 228,
+            "mean_p_cancel": 0.3505657336318278,
+            "cancel_rate": 0.6228070175438597
+          },
+          {
+            "bin": 4,
+            "rows": 37,
+            "mean_p_cancel": 0.4396396396396396,
+            "cancel_rate": 0.6486486486486487
+          },
+          {
+            "bin": 5,
+            "rows": 233,
+            "mean_p_cancel": 0.5121184866214324,
+            "cancel_rate": 0.759656652360515
+          },
+          {
+            "bin": 6,
+            "rows": 82,
+            "mean_p_cancel": 0.6405488018268304,
+            "cancel_rate": 0.926829268292683
+          },
+          {
+            "bin": 7,
+            "rows": 256,
+            "mean_p_cancel": 0.7121331177083212,
+            "cancel_rate": 0.81640625
+          },
+          {
+            "bin": 8,
+            "rows": 17,
+            "mean_p_cancel": 0.8706625706375394,
+            "cancel_rate": 0.8823529411764706
+          },
+          {
+            "bin": 9,
+            "rows": 622,
+            "mean_p_cancel": 0.9741520410723254,
+            "cancel_rate": 0.9983922829581994
+          }
+        ],
+        "366-inf days": [
+          {
+            "bin": 0,
+            "rows": 104,
+            "mean_p_cancel": 0.007648480992631491,
+            "cancel_rate": 0.0
+          },
+          {
+            "bin": 1,
+            "rows": 2,
+            "mean_p_cancel": 0.1632406458280753,
+            "cancel_rate": 0.0
+          },
+          {
+            "bin": 2,
+            "rows": 24,
+            "mean_p_cancel": 0.2448089892830747,
+            "cancel_rate": 0.4166666666666667
+          },
+          {
+            "bin": 3,
+            "rows": 26,
+            "mean_p_cancel": 0.3483620636391721,
+            "cancel_rate": 1.0
+          },
+          {
+            "bin": 5,
+            "rows": 5,
+            "mean_p_cancel": 0.5158427219930637,
+            "cancel_rate": 0.6
+          },
+          {
+            "bin": 6,
+            "rows": 1,
+            "mean_p_cancel": 0.6315789473684211,
+            "cancel_rate": 1.0
+          },
+          {
+            "bin": 7,
+            "rows": 4,
+            "mean_p_cancel": 0.731072881413872,
+            "cancel_rate": 1.0
+          },
+          {
+            "bin": 9,
+            "rows": 519,
+            "mean_p_cancel": 0.9910949971416178,
+            "cancel_rate": 1.0
+          }
+        ],
+        "lead_at_most_365": [
+          {
+            "bin": 0,
+            "rows": 4879,
+            "mean_p_cancel": 0.020078166173865746,
+            "cancel_rate": 0.07399057183849149
+          },
+          {
+            "bin": 1,
+            "rows": 2710,
+            "mean_p_cancel": 0.1605489724746022,
+            "cancel_rate": 0.24243542435424353
+          },
+          {
+            "bin": 2,
+            "rows": 1114,
+            "mean_p_cancel": 0.2463472750224137,
+            "cancel_rate": 0.2495511669658887
+          },
+          {
+            "bin": 3,
+            "rows": 1283,
+            "mean_p_cancel": 0.3504249225045413,
+            "cancel_rate": 0.36944660950896335
+          },
+          {
+            "bin": 4,
+            "rows": 189,
+            "mean_p_cancel": 0.44164353170230214,
+            "cancel_rate": 0.3968253968253968
+          },
+          {
+            "bin": 5,
+            "rows": 1150,
+            "mean_p_cancel": 0.5122929933546607,
+            "cancel_rate": 0.5539130434782609
+          },
+          {
+            "bin": 6,
+            "rows": 333,
+            "mean_p_cancel": 0.6381014486778218,
+            "cancel_rate": 0.6876876876876877
+          },
+          {
+            "bin": 7,
+            "rows": 1415,
+            "mean_p_cancel": 0.7123316706178684,
+            "cancel_rate": 0.688339222614841
+          },
+          {
+            "bin": 8,
+            "rows": 134,
+            "mean_p_cancel": 0.8668067784866769,
+            "cancel_rate": 0.753731343283582
+          },
+          {
+            "bin": 9,
+            "rows": 1076,
+            "mean_p_cancel": 0.9561406341825924,
+            "cancel_rate": 0.9247211895910781
+          }
+        ]
+      }
+    },
+    "calibration_selection_population": "Tuning requests booked on/after replay start; commitments excluded",
+    "selected_calibration": "isotonic",
+    "feature_columns": [
+      "hotel",
+      "arrival_weekday",
+      "booking_weekday",
+      "meal",
+      "country",
+      "sales_segment",
+      "sales_channel",
+      "room_type",
+      "agent",
+      "company",
+      "guest_type",
+      "days_ahead",
+      "nights",
+      "weekend_nights",
+      "weekday_nights",
+      "weekend_share",
+      "adults",
+      "children",
+      "babies",
+      "total_guests",
+      "has_kids",
+      "returning_guest",
+      "past_cancellations",
+      "past_stays",
+      "amendments",
+      "waitlist_days",
+      "nightly_rate",
+      "rate_vs_typical",
+      "stay_value",
+      "special_requests",
+      "is_free",
+      "block_size_so_far"
+    ],
+    "fit_seconds": 77.807
+  }
+}

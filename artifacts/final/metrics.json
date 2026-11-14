@@ -1,0 +1,84 @@
+{
+  "split": {
+    "name": "Final",
+    "train": {
+      "start": "2015-07-01",
+      "end": "2016-10-01"
+    },
+    "internal_validation": {
+      "start": "2016-08-01",
+      "end": "2016-10-01"
+    },
+    "calibration": {
+      "start": "2016-10-01",
+      "end": "2017-01-01"
+    },
+    "replay": {
+      "start": "2017-01-01",
+      "end": "2018-01-01"
+    },
+    "tuning": null,
+    "confirmation": null
+  },
+  "seed": 2026,
+  "rows": {
+    "internal_fit": 53330,
+    "internal_validation": 10424,
+    "train": 63754,
+    "calibration": 14378
+  },
+  "model_selection": {
+    "combined": {
+      "metrics": {
+        "rows": 10424,
+        "cancel_rate": 0.3689562547966232,
+        "mean_p_cancel": 0.3198924768398361,
+        "log_loss": 0.3759464975405681,
+        "brier": 0.12004209185907665,
+        "auc": 0.9057781085946995
+      },
+      "iterations": {
+        "all": 305
+      }
+    }
+  },
+  "selected_layout": "combined",
+  "confirmation_evaluated": false,
+  "calibration_candidates": {},
+  "calibration_selection_population": "Explicit pre-frozen method; no holdout selection",
+  "selected_calibration": "isotonic",
+  "feature_columns": [
+    "hotel",
+    "arrival_weekday",
+    "booking_weekday",
+    "meal",
+    "country",
+    "sales_segment",
+    "sales_channel",
+    "room_type",
+    "agent",
+    "company",
+    "guest_type",
+    "days_ahead",
+    "nights",
+    "weekend_nights",
+    "weekday_nights",
+    "weekend_share",
+    "adults",
+    "children",
+    "babies",
+    "total_guests",
+    "has_kids",
+    "returning_guest",
+    "past_cancellations",
+    "past_stays",
+    "amendments",
+    "waitlist_days",
+    "nightly_rate",
+    "rate_vs_typical",
+    "stay_value",
+    "special_requests",
+    "is_free",
+    "block_size_so_far"
+  ]
+}

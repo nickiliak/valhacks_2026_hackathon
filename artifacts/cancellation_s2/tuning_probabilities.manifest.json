@@ -1,0 +1,8 @@
+{
+  "model_sha256": "c0c0d20298df13dddd04ac5b9b7f28bdbc37fda349e5d15de683dea01e5859be",
+  "population_sha256": "3da527a9f4eda24dd47975266aafeafe8355bcff70fb7abb54e3044926c8e7d7",
+  "start": "2016-07-01",
+  "end_exclusive": "2016-10-01",
+  "rows": 14968,
+  "group_state": "commitments then requests; all observed"
+}
