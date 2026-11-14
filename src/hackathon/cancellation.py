@@ -150,8 +150,16 @@ class CancellationModel:
                    ProbabilityCalibration(**payload["calibration"]), payload["metadata"])
 
 
+def recency_weights(rows: pd.DataFrame, half_life: float | None):
+    """Newer arrivals count more: weight halves for every ``half_life`` days of age."""
+    if half_life is None:
+        return None
+    arrival = pd.to_datetime(rows.arrival_date)
+    return (0.5 ** ((arrival.max() - arrival).dt.days / float(half_life))).to_numpy()
+
+
 def _fit_models(x, y, *, layout, iterations, depth, learning_rate, seed, threads,
-                validation=None, selected_iterations=None):
+                validation=None, selected_iterations=None, weight=None):
     keys = ["all"] if layout == "combined" else sorted(x.hotel.unique())
     models = {}
     for key in keys:
@@ -171,15 +179,23 @@ def _fit_models(x, y, *, layout, iterations, depth, learning_rate, seed, threads
                       "use_best_model": True}
         if len(np.unique(y[mask])) < 2:
             raise ValueError(f"Training needs both outcomes for {key}")
-        model.fit(x.loc[mask, _MODEL_COLUMNS], y[mask], **kwargs)
+        model.fit(x.loc[mask, _MODEL_COLUMNS], y[mask],
+                  sample_weight=None if weight is None else weight[mask], **kwargs)
         models[key] = model
     return models
 
 
 def train_cancellation_model(rows: pd.DataFrame, *, split_name="S2", layout="auto",
                              calibration="auto", iterations=800, depth=6, learning_rate=0.05,
-                             seed=2026, threads=4, split=None) -> tuple[CancellationModel, dict]:
+                             seed=2026, threads=4, split=None, extend=False,
+                             half_life=None) -> tuple[CancellationModel, dict]:
     """Select on internal validation, refit train, calibrate, then choose on tune.
+
+    ``extend``: after the calibrator has been fitted on predictions for the
+    calibration months (which the first model never saw), the trees are refitted
+    on training + calibration months with the same recipe and the calibrator is
+    kept. The newest months then shape the model without being calibrated on
+    rows it trained on. ``half_life``: recency weighting of training rows.
 
     Confirmation rows never enter feature fitting, early stopping, calibration,
     calibration selection, or the returned report. Final/S1 require a calibration
@@ -206,7 +222,8 @@ def train_cancellation_model(rows: pd.DataFrame, *, split_name="S2", layout="aut
     common = dict(iterations=iterations, depth=depth, learning_rate=learning_rate, seed=seed, threads=threads)
     trials = {}
     for candidate in (["combined", "per_hotel"] if layout == "auto" else [layout]):
-        models = _fit_models(x_fit, fit_y, layout=candidate, validation=(x_validation, validation_y), **common)
+        models = _fit_models(x_fit, fit_y, layout=candidate, validation=(x_validation, validation_y),
+                             weight=recency_weights(fit_rows, half_life), **common)
         raw = CancellationModel(features, models)._raw(x_validation)
         trials[candidate] = {"metrics": probability_metrics(validation_y, raw),
                              "iterations": {key: model.tree_count_ for key, model in models.items()}}
@@ -214,9 +231,16 @@ def train_cancellation_model(rows: pd.DataFrame, *, split_name="S2", layout="aut
     # Refit only the training period, with the tree counts already frozen.
     features = FeatureBuilder().fit(train_rows)
     models = _fit_models(features.make_features(train_rows), train_rows.cancelled.to_numpy(dtype=int),
-                         layout=chosen_layout, selected_iterations=trials[chosen_layout]["iterations"], **common)
+                         layout=chosen_layout, selected_iterations=trials[chosen_layout]["iterations"],
+                         weight=recency_weights(train_rows, half_life), **common)
     model = CancellationModel(features, models)
     cal_raw = model.p_cancel(calibration_rows)
+    if extend:
+        both = pd.concat([train_rows, calibration_rows])
+        models = _fit_models(features.make_features(both), both.cancelled.to_numpy(dtype=int),
+                             layout=chosen_layout, selected_iterations=trials[chosen_layout]["iterations"],
+                             weight=recency_weights(both, half_life), **common)
+        model = CancellationModel(features, models)
     methods = ["raw", "sigmoid"] if calibration == "auto" else [calibration]
     if calibration == "auto" and len(calibration_rows) >= 2000:
         methods.append("isotonic")
@@ -226,6 +250,7 @@ def train_cancellation_model(rows: pd.DataFrame, *, split_name="S2", layout="aut
               "rows": {"internal_fit": len(fit_rows), "internal_validation": len(validation_rows),
                        "train": len(train_rows), "calibration": len(calibration_rows)},
               "model_selection": trials, "selected_layout": chosen_layout,
+              "extended_training": bool(extend), "recency_half_life_days": half_life,
               "confirmation_evaluated": False, "calibration_candidates": {}}
     if split.tuning is not None:
         commitments, requests = replay_population(rows, split.tuning)

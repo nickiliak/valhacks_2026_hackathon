@@ -26,9 +26,9 @@ from hackathon.policy import PolicyParams
 BENCH = None
 
 
-def start(stream: str, data_path: str) -> None:
+def start(stream: str, data_path: str, model_directory: str, rolling_path: str) -> None:
     global BENCH
-    BENCH = build_stream(stream, data_path)
+    BENCH = build_stream(stream, data_path, model_directory=model_directory, rolling_path=rolling_path)
 
 
 def run(job: tuple[dict, str]) -> dict:
@@ -64,6 +64,8 @@ def main() -> None:
     parser.add_argument("--set", action="append", default=[], help="name=v1,v2,... (repeatable; full grid)")
     parser.add_argument("--readings", default="stay_value")
     parser.add_argument("--workers", type=int, default=6)
+    parser.add_argument("--model-dir", default="artifacts/cancellation_s2", help="model for the s2 stream")
+    parser.add_argument("--rolling", default="artifacts/rolling_2016/p_show.csv", help="probabilities for the year stream")
     parser.add_argument("--output", type=Path, default=Path("artifacts/tuning"))
     args = parser.parse_args()
     names = [item.split("=")[0] for item in args.set]
@@ -71,7 +73,8 @@ def main() -> None:
     jobs = [(dict(zip(names, combo)), reading) for combo in product(*values) for reading in args.readings.split(",")]
     args.output.mkdir(parents=True, exist_ok=True)
     rows = []
-    with ProcessPoolExecutor(min(args.workers, len(jobs)), initializer=start, initargs=(args.stream, args.data)) as pool:
+    with ProcessPoolExecutor(min(args.workers, len(jobs)), initializer=start,
+                             initargs=(args.stream, args.data, args.model_dir, args.rolling)) as pool:
         for row in pool.map(run, jobs):
             print(row.pop("text"), flush=True)
             rows.append({"stream": args.stream, **row})

@@ -61,19 +61,25 @@ STREAMS = {
 }
 
 
-def build_stream(stream: str, data_path: str = "data/train.csv") -> Bench:
-    """The replay streams used for tuning, simulation and the one-off confirmation."""
+def build_stream(stream: str, data_path: str = "data/train.csv", *,
+                 model_directory: str = "artifacts/cancellation_s2",
+                 rolling_path: str = "artifacts/rolling_2016/p_show.csv") -> Bench:
+    """The replay streams used for tuning, simulation and the one-off confirmation.
+
+    ``model_directory`` (s2, confirm) and ``rolling_path`` (year) let an
+    alternative model be replayed without overwriting the standard artifacts.
+    """
     from hackathon.contracts import load_history
 
     data = load_history(data_path)
     if stream in ("s2", "confirm"):
-        p_show = cached_p_show(data, "artifacts/cancellation_s2", Period("2016-07-01", "2017-01-01"))
+        p_show = cached_p_show(data, model_directory, Period("2016-07-01", "2017-01-01"))
         if stream == "s2":
             return Bench(data, "2016-07-01", "2016-09-30", "2016-07-01", p_show)
         # Policy state must run on from July; only October onward is reported.
         return Bench(data, "2016-07-01", "2016-12-31", "2016-07-01", p_show, report=("2016-10-01", "2016-12-31"))
     if stream == "year":
-        frame = pd.read_csv("artifacts/rolling_2016/p_show.csv")
+        frame = pd.read_csv(rolling_path)
         return Bench(data, "2016-01-01", "2016-12-31", "2016-01-01", dict(zip(frame.booking_id, frame.p_show)),
                      report=("2016-01-01", "2016-09-30"))
     raise ValueError(f"Unknown stream {stream!r}; choose from {list(STREAMS)}")

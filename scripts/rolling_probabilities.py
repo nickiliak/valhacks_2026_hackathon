@@ -38,6 +38,8 @@ def main() -> None:
     parser.add_argument("--data", default="data/train.csv")
     parser.add_argument("--calibration", default="sigmoid")
     parser.add_argument("--layout", default="combined")
+    parser.add_argument("--extend", action="store_true")
+    parser.add_argument("--half-life", type=float)
     parser.add_argument("--output", type=Path, default=Path("artifacts/rolling_2016/p_show.csv"))
     args = parser.parse_args()
     rows = load_history(args.data)
@@ -48,7 +50,8 @@ def main() -> None:
     previous = np.datetime64("1900-01-01")
     for index, (until, train, validation, calibration) in enumerate(QUARTERS):
         split = ChronologicalSplit(f"rolling{index + 1}", train, validation, calibration, REPLAY)
-        model, report = train_cancellation_model(rows, split=split, layout=args.layout, calibration=args.calibration)
+        model, report = train_cancellation_model(rows, split=split, layout=args.layout, calibration=args.calibration,
+                                                 extend=args.extend, half_life=args.half_life)
         # Score the whole stream so block sizes are counted exactly as online.
         scores = model.p_cancel(population)
         mask = (booked >= previous) & (booked < np.datetime64(until))

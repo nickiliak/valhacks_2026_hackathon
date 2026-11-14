@@ -32,21 +32,23 @@
       "metrics": {
         "rows": 10424,
         "cancel_rate": 0.3689562547966232,
-        "mean_p_cancel": 0.3198924768398361,
-        "log_loss": 0.3759464975405681,
-        "brier": 0.12004209185907665,
-        "auc": 0.9057781085946995
+        "mean_p_cancel": 0.3260912354370752,
+        "log_loss": 0.3645076821497827,
+        "brier": 0.1164755526794817,
+        "auc": 0.9102028112745064
       },
       "iterations": {
-        "all": 305
+        "all": 429
       }
     }
   },
   "selected_layout": "combined",
+  "extended_training": true,
+  "recency_half_life_days": 180,
   "confirmation_evaluated": false,
   "calibration_candidates": {},
   "calibration_selection_population": "Explicit pre-frozen method; no holdout selection",
-  "selected_calibration": "isotonic",
+  "selected_calibration": "sigmoid",
   "feature_columns": [
     "hotel",
     "arrival_weekday",

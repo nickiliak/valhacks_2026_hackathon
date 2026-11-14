@@ -47,6 +47,8 @@ def main() -> None:
     parser.add_argument("--learning-rate", type=float, default=0.05)
     parser.add_argument("--threads", type=int, default=4)
     parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument("--extend", action="store_true", help="refit the trees on training + calibration months")
+    parser.add_argument("--half-life", type=float, help="recency weighting half-life in days")
     args = parser.parse_args()
     destination = args.output or Path("artifacts") / f"cancellation_{args.split.lower()}"
     start = time.perf_counter()
@@ -57,7 +59,7 @@ def main() -> None:
     model, report = train_cancellation_model(
         rows, split_name=args.split, layout=args.layout, calibration=args.calibration,
         iterations=args.iterations, depth=args.depth, learning_rate=args.learning_rate,
-        seed=args.seed, threads=args.threads,
+        seed=args.seed, threads=args.threads, extend=args.extend, half_life=args.half_life,
     )
     report["fit_seconds"] = round(time.perf_counter() - start, 3)
     model.save(destination)

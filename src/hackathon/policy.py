@@ -50,6 +50,10 @@ class PolicyParams:
     tail: int = 21                  # nights simulated beyond the candidate's stay
     logit_noise: float = 0.0        # shared uncertainty about the probabilities themselves
     analog_weeks: tuple = (-1, 0, 1)
+    live_scale: bool = False        # keep re-measuring the price level from the requests seen so far
+    live_volume: bool = False       # same for the number of requests
+    live_prior: float = 200.0       # how many requests the start-up measurement is worth
+    live_refresh_days: int = 7
     cheapest: str = "stay_value"
     p_floor: float = 0.03
     walk_penalty: float = 2.5
@@ -244,6 +248,12 @@ class RiskSim:
                 changed = diff.any(axis=1)
                 if changed.any():
                     longest = int(lens[changed].max())
+                    # A stay longer than the buffer must still be counted on every
+                    # night it occupies, so widen the buffer when one is affected.
+                    affected_end = min(self.T, t + longest)
+                    if affected_end > t0 + columns:
+                        cur = np.concatenate((cur, self.occ[:, t0 + columns:affected_end]), axis=1)
+                        columns = cur.shape[1]
                     width = min(columns - col, longest)
                     stay = (np.arange(width)[None, :] < lens[changed][:, None]).astype(np.float32)
                     cur[:, col:col + width] += diff[changed].T @ stay
@@ -290,6 +300,13 @@ class _Hotel:
         self.tables: list[tuple[np.ndarray, np.ndarray, int]] = [(np.empty(0, int), np.empty(0), 0)] * self.T
         self.rate_scale = 1.0
         self.demand_scale = 1.0
+        self.scale = np.ones(self.T)             # price level per night vs one year earlier
+        self.volume = np.ones(self.T)            # request volume per night vs one year earlier
+        self.night_month = self.dates.month.to_numpy()
+        self.seen_month: list[int] = []          # every priced request observed: arrival month, rate
+        self.seen_rate: list[float] = []
+        self.reference = None                    # last year's requests: (booked, arrival month, rate)
+        self.refreshed = self.day0
         self.rng = np.random.default_rng(seed)
         self.sim = RiskSim(self.cap, params.draws, params.walk_penalty, params.tail) if params.risk == "mc" else None
         self.uniforms: dict[tuple, np.ndarray] = {}
@@ -358,12 +375,59 @@ class AcceptancePolicy:
             measured = self.thermometer.get(hotel.name, {"rate": 1.0, "volume": 1.0})
             hotel.rate_scale = measured["rate"] if self.params.rate_scale is None else self.params.rate_scale
             hotel.demand_scale = measured["volume"] if self.params.demand_scale is None else self.params.demand_scale
-            scale = hotel.rate_scale * self.params.price_mult
+            hotel.scale[:] = hotel.rate_scale
+            hotel.volume[:] = hotel.demand_scale
             tables = []
             for night in hotel.dates:
                 lead, rate, pooled = self.demand.night_table(hotel.name, night, self.params.analog_weeks)
-                tables.append((lead, rate * scale, pooled))
+                tables.append((lead, rate * self.params.price_mult, pooled))
             hotel.tables = tables
+            if self.params.live_scale or self.params.live_volume:
+                self._build_reference(hotel, first, last)
+
+    def _build_reference(self, hotel: _Hotel, first: pd.Timestamp, last: pd.Timestamp) -> None:
+        """Last year's requests, shifted one year, for like-with-like comparison during the run."""
+        frame = self.demand.frame
+        shift = pd.Timedelta(days=YEAR)
+        arrival, booked = frame.arrival_date + shift, frame.booking_date + shift
+        keep = (frame.hotel.eq(hotel.name) & (frame.nightly_rate > 0) & (arrival >= first) & (arrival <= last)
+                & (booked >= first))  # booked inside the run, as this year's requests are
+        order = np.argsort(booked[keep].to_numpy(), kind="stable")
+        hotel.reference = (booked[keep].to_numpy("datetime64[D]")[order], arrival[keep].dt.month.to_numpy()[order],
+                           frame.nightly_rate[keep].to_numpy(dtype=float)[order])
+
+    def _refresh(self, hotel: _Hotel, today: pd.Timestamp) -> None:
+        """Re-measure price level and volume from what guests have actually asked so far.
+
+        For every arrival month: this year's requests seen to date against last
+        year's requests made by the same date. Thin months lean on the hotel-wide
+        figure, and the hotel-wide figure leans on the start-up measurement.
+        """
+        hotel.refreshed = today
+        booked, months, rates = hotel.reference
+        cut = int(np.searchsorted(booked, np.datetime64(today, "D"), side="right"))
+        ref_month, ref_rate = months[:cut], rates[:cut]
+        seen_month, seen_rate = np.asarray(hotel.seen_month), np.asarray(hotel.seen_rate)
+        prior = self.params.live_prior
+        measured = {}
+        for month in np.unique(seen_month):
+            now, then = seen_rate[seen_month == month], ref_rate[ref_month == month]
+            if len(now) >= 30 and len(then) >= 30:
+                measured[int(month)] = (min(len(now), len(then)), float(np.median(now) / np.median(then)), len(now) / len(then))
+        rate_all, volume_all = hotel.rate_scale, hotel.demand_scale
+        if measured:
+            weight = np.array([m[0] for m in measured.values()], dtype=float)
+            total = weight.sum()
+            rate_all = (total * np.average([m[1] for m in measured.values()], weights=weight) + prior * rate_all) / (total + prior)
+            volume_all = (total * np.average([m[2] for m in measured.values()], weights=weight) + prior * volume_all) / (total + prior)
+        rate_month, volume_month = np.full(13, rate_all), np.full(13, volume_all)
+        for month, (count, rate, volume) in measured.items():
+            rate_month[month] = (count * rate + prior * rate_all) / (count + prior)
+            volume_month[month] = (count * volume + prior * volume_all) / (count + prior)
+        if self.params.live_scale:
+            hotel.scale = np.clip(rate_month[hotel.night_month], 0.7, 1.8)
+        if self.params.live_volume:
+            hotel.volume = np.clip(volume_month[hotel.night_month], 0.6, 1.6)
 
     def _draw(self, hotel: _Hotel, booking: Mapping, p: float) -> np.ndarray:
         """Show/no-show in every draw; rows of one group block share the coin."""
@@ -390,9 +454,9 @@ class AcceptancePolicy:
         if rooms_left <= 0:
             # Already full in expectation: a new guest can only come in by walking
             # someone, and the revenue-difference simulation prices exactly that.
-            return float(future[0]) + 0.01 if self.params.price_when_full else 0.0
-        index = int(rooms_left * pooled / hotel.demand_scale)
-        return float(future[index]) if index < len(future) else 0.0
+            return float(future[0]) * hotel.scale[t] + 0.01 if self.params.price_when_full else 0.0
+        index = int(rooms_left * pooled / hotel.volume[t])
+        return float(future[index]) * hotel.scale[t] if index < len(future) else 0.0
 
     # ---- decisions ------------------------------------------------------
     def decide(self, booking: dict) -> bool:
@@ -423,6 +487,13 @@ class AcceptancePolicy:
             return self._note(booking, False, "outside the planning horizon", p_show=p)
         if not rate > 0:
             return self._note(booking, False, "free booking: no revenue, only risk", p_show=p)
+        if hotel.reference is not None:
+            # Demand facts, so rejected requests count too.
+            today = pd.Timestamp(booking["booking_date"]).normalize()
+            hotel.seen_month.append(int(hotel.night_month[t0]))
+            hotel.seen_rate.append(rate)
+            if (today - hotel.refreshed).days >= self.params.live_refresh_days:
+                self._refresh(hotel, today)
         if (hotel.raw[t0:stop] + 1 > self.params.raw_cap * hotel.rooms).any():
             return self._note(booking, False, "booking-count guardrail reached", p_show=p)
         covered = stop - t0

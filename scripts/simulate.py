@@ -39,6 +39,8 @@ def main() -> None:
     parser.add_argument("--no-baselines", action="store_true")
     parser.add_argument("--frozen", action="store_true", help="required for --stream confirm")
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--model-dir", default="artifacts/cancellation_s2", help="model for the s2 and confirm streams")
+    parser.add_argument("--rolling", default="artifacts/rolling_2016/p_show.csv", help="probabilities for the year stream")
     args = parser.parse_args()
     if args.stream == "confirm" and not args.frozen:
         parser.error("The confirmation period is scored once. Freeze config/policy.json, then pass --frozen.")
@@ -49,7 +51,7 @@ def main() -> None:
     params = PolicyParams.from_dict(settings)
     output = args.output or Path("artifacts") / f"simulate_{args.stream}"
     output.mkdir(parents=True, exist_ok=True)
-    bench = build_stream(args.stream, args.data)
+    bench = build_stream(args.stream, args.data, model_directory=args.model_dir, rolling_path=args.rolling)
     print(f"{args.stream}: {STREAMS[args.stream]}")
     first = bench.prepared["stay_value"]
     show_rates = historical_show_rates(load_history(args.data), first.dates[0], first.rooms)

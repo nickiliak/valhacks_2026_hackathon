@@ -27,7 +27,9 @@ def main() -> None:
     started = time.perf_counter()
     rows = load_history(args.data)
     model, report = train_cancellation_model(rows, split_name="Final", layout=config["model"]["layout"],
-                                             calibration=config["model"]["calibration"])
+                                             calibration=config["model"]["calibration"],
+                                             extend=config["model"].get("extend", False),
+                                             half_life=config["model"].get("half_life"))
     demand = DemandHistory.from_rows(rows, HISTORY_END)
     params = PolicyParams.from_dict(config["policy"])
     save_bundle(args.output, model, demand, params,

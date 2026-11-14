@@ -10,9 +10,14 @@ Add packages with `uv add <pkg>` (commit `pyproject.toml` + `uv.lock`). Skills: 
 The whole pipeline is implemented: chronological splits, shared preprocessing,
 historical replay, a calibrated CatBoost cancellation model, nightly minimum
 prices, the acceptance policy, and `scripts/solution.py`, which the organisers'
-`evaluate(Solution)` can run. The current settings completed the frozen
-October–December confirmation on 14 November 2026: **€1.261M net**, 18.1% above
-average-rate overbooking. The official 2017 evaluation is still pending.
+`evaluate(Solution)` can run.
+
+**Final version (14 November 2026, 16:30).** On October–December 2016 it earns
+**€1.348M net**, 26% above average-rate overbooking and 83% of the proven
+hindsight optimum (€1.632M). That period had already been inspected, so this is
+a development check, not an independent confirmation; the earlier frozen
+confirmation (€1.261M, an older version) is archived below. The official 2017
+evaluation is still pending.
 
 ## Run the pipeline
 
@@ -20,27 +25,31 @@ From the repository root with the permitted, deposit-free `data/train.csv`:
 
 ```powershell
 uv sync
-uv run python -m unittest discover -s tests                            # 51 tests
-uv run python scripts/train_cancel_model.py --split S2 --layout combined  # model for the Jul-Dec 2016 replays
-uv run python scripts/rolling_probabilities.py                        # honest probabilities for a full-2016 replay
-uv run python scripts/build_final.py                                  # deployment model + price tables -> artifacts/final
-uv run python scripts/check_solution.py                               # dress rehearsal of scripts/solution.py
-uv run python scripts/simulate.py --stream year                       # our policy vs baselines, with config/policy.json
+uv run python -m unittest discover -s tests                                      # 53 tests
+uv run python scripts/train_cancel_model.py --split S2 --layout combined --extend --half-life 180   # model for the Jul-Dec 2016 replays
+uv run python scripts/rolling_probabilities.py --extend --half-life 180          # honest probabilities for a full-2016 replay
+uv run python scripts/build_final.py                                             # deployment model + price tables -> artifacts/final
+uv run python scripts/check_solution.py                                          # dress rehearsal of scripts/solution.py
+uv run python scripts/simulate.py --stream year                                  # our policy vs baselines, with config/policy.json
 ```
 
-`artifacts/` is git-ignored, so every machine must run these once (about six
-minutes in total). `scripts/solution.py` loads `artifacts/final`; if that folder
-is missing it prints a warning and uses a plain capacity rule instead of crashing.
+`artifacts/` is tracked in git, so after a pull `scripts/solution.py` works
+without retraining; the commands above recreate everything (about ten minutes).
+`scripts/solution.py` loads `artifacts/final`; if that folder is missing it
+prints a warning and uses a plain capacity rule instead of crashing.
 
 | File | Role |
 |---|---|
-| `config/policy.json` | The policy settings and the model layout/calibration. `simulate.py` and `build_final.py` both read it, so what you simulate is what ships. Re-run `build_final.py` after changing it |
+| `config/policy.json` | The policy settings and the model recipe. `simulate.py` and `build_final.py` both read it, so what you simulate is what ships. Re-run `build_final.py` after changing it |
 | `src/hackathon/policy.py` | `AcceptancePolicy` (the decision rule), `DemandHistory` (price tables), `RiskSim` (revenue-difference simulation), `thermometer`, `save_bundle` / `load_bundle` |
 | `scripts/solution.py` | The official `Solution` class: loads the bundle and delegates to `AcceptancePolicy` |
 | `scripts/simulate.py` | One run of the policy plus all baselines on a replay stream; saves decisions with reasons |
 | `scripts/tune_policy.py` | Grid of settings on a stream, in parallel, e.g. `--stream year --set load_target=1.0,1.1 --set margin=0,0.1` |
 | `scripts/check_solution.py` | Runs the real `Solution` on a 2017-shaped year: timing, crash and odd-input checks. Prints no revenue |
-| `scripts/analysis/calibration_check.py` | Evidence for the calibration choices below |
+| `scripts/analysis/calibration_check.py` | Evidence for removing the season labels |
+| `scripts/analysis/model_recency_check.py` | Evidence for training on the newest months and weighting recent bookings |
+| `scripts/analysis/empty_rooms.py` | Which rule rejected guests who would have fitted into rooms that stayed empty |
+| `scripts/analysis/stress_test.py` | What happens to revenue and walks if the probabilities are wrong |
 
 ## How a request is decided
 
@@ -51,10 +60,14 @@ is missing it prints a warning and uses a plain capacity rule instead of crashin
    same weekday one year earlier (plus the week before and after) and who booked
    later than today. Sorted by rate, they show what the rooms still free are
    worth: the minimum price is the rate of the first of them who would no longer
-   fit. Rates are scaled to this year by comparing the commitments on hand with
-   those on hand a year earlier. The request must pay at least the average
-   minimum over its nights. On a night that is already full in expectation the
-   price test steps aside and step 5 decides alone.
+   fit. The request must pay at least the average minimum over its nights. On a
+   night that is already full in expectation the price test steps aside and
+   step 5 decides alone.
+   Last year's rates are scaled to this year. The scale starts from the
+   commitments on hand versus those on hand a year earlier, and is re-measured
+   every week from the requests seen so far: what guests are asking to pay for
+   each arrival month against what they paid by the same date last year
+   (`live_scale`). Rejected requests count too; no outcomes are used.
 5. **Revenue difference.** 200 random show-up scenarios of the bookings we hold
    (one coin per group block), each replayed through the scoring rules with and
    without the request. Accept if the average net revenue is higher with it.
@@ -68,52 +81,95 @@ Every decision records a reason (`simulate.py` writes them to `*_decisions.csv`)
 | Stream | What it is | Use |
 |---|---|---|
 | `year` | All of 2016 from 1 Jan, reported for Jan–Sep arrivals. Each request is scored by a model trained only on arrivals before the quarter it was booked in | The 2017 look-alike: few commitments, long lead times |
-| `s2` | Jul–Sep 2016 from 1 Jul | The plan's tuning period. Commitments alone overfill it (reject-all still walks 2,429 guests), so it mostly tests displacement |
-| `confirm` | Oct–Dec 2016, policy state carried on from 1 Jul | Completed with frozen settings; results in `artifacts/simulate_confirm`. Do not tune on this period |
+| `s2` | Jul–Sep 2016 from 1 Jul | Commitments alone overfill it (reject-all still walks 2,429 guests), so it mostly tests displacement |
+| `confirm` | Oct–Dec 2016, policy state carried on from 1 Jul | Scored once with frozen settings (`artifacts/simulate_confirm`). Since inspected, so later runs are development checks (`artifacts/simulate_q4_development`) |
 
-Results with the default settings, our reconstruction of the scorer, "cheapest" = lowest stay value:
+## Results of the final version
 
-| Policy | `year` net | walks | `s2` net |
-|---|---|---|---|
-| Accept all | −€1.67M | 13,467 | −€1.66M |
-| Simple capacity cap | €3.05M | 164 | €0.38M |
-| Average-rate overbooking | €4.17M | 1,507 | €0.42M |
-| **Our policy** | **€4.61M** | 313 | **€0.44M** |
-| Greedy hindsight (lower bound of the ceiling) | €5.91M | 164 | €0.49M |
+Our reconstruction of the scorer, "cheapest" = lowest stay value. The final
+version was chosen on the first two columns; October–December was run afterwards.
+
+| Policy | `year` net | `year` walks | `s2` net | Oct–Dec net | Oct–Dec walks |
+|---|---|---|---|---|---|
+| Accept all | −€1.67M | 13,467 | −€1.66M | €0.04M | 3,873 |
+| Simple capacity cap | €3.05M | 164 | €0.38M | €0.79M | 215 |
+| Average-rate overbooking | €4.17M | 1,507 | €0.42M | €1.07M | 436 |
+| Frozen version (confirmed 14:57) | €4.61M | 313 | €0.44M | €1.261M | 255 |
+| **Final version** | **€4.93M** | 363 | **€0.46M** | **€1.348M** | 288 |
+| Greedy hindsight (lower bound of the ceiling) | €5.91M | 164 | €0.49M | €1.53M | 215 |
+| Proven hindsight optimum (solver, Oct–Dec only) | | | | €1.632M | 232 |
+
+Under the other reading of "cheapest" (lowest nightly rate) the final version
+earns €4.95M, €0.95M and €1.339M.
+
+What changed between the frozen and the final version, and what each added on `year`:
+
+| Change | `year` net |
+|---|---|
+| Frozen version | €4.61M |
+| + price scale re-measured weekly from the requests seen (`live_scale`) | €4.67M |
+| + trees also trained on the calibration months (`extend`) | €4.87M |
+| + recent bookings weighted more (`half_life` 180 days) | €4.93M |
+| + long-stay bookkeeping fix in the simulation (from the improvement branch) | unchanged |
+
+No policy setting was changed: `load_target`, `price_mult`, `margin` and
+`raw_cap` are still the defaults.
+
+**Why not greedier or more cautious.** `scripts/analysis/stress_test.py` feeds
+the policy deliberately wrong probabilities. On October–December (net in € million, walks in brackets):
+
+| Policy's belief about show-ups | Default settings | Greedier (`load_target` 1.1, `price_mult` 0.85, `raw_cap` 4) |
+|---|---|---|
+| Far too low (about 35 points) | 1.17 (1,029) | 0.85 (1,821) |
+| Too low (about 13 points) | 1.35 (476) | 1.31 (767) |
+| Correct | 1.35 (288) | 1.38 (339) |
+| Too high (about 10 points) | 1.26 (247) | 1.31 (241) |
+
+The defaults lose little in either direction. Greedier settings gain 2% when the
+model is right and lose far more when it is badly wrong; on `year` and `s2` they
+gain nothing with the final model. Extra caution (`margin` 0.15 or
+`logit_noise` 0.5) changed every cell by under 1%.
+
+**The improvement branch** (`improve/booking-revenue-20261114`) reaches similar
+net revenue (€4.95M / €0.46M / €1.335M) with a context calibrator and the
+greedier settings above, at twice the walks on `year` (752). Its long-stay fix,
+regression test and solver ceiling are used here; its calibrator and settings
+are not. Both versions learn from the same calibration months, so they should
+not be combined.
+
+Known weaknesses:
+
+- **No independent confirmation of the final version.** October–December was
+  not used to choose it, but it had been inspected before.
+- **The model we ship cannot be tested.** It is trained on all 18 months; every
+  replay uses a stand-in trained on less.
+- **Downtown is still under-filled in the `year` stream (78% occupancy)**
+  because the early rolling models see little history. On October–December,
+  with nine months of history, accepted guests were predicted to show at 67%
+  (Downtown) and 85% (Seaside) and 65% and 82% did.
+- **The stress test shifts all probabilities the same way.** A model that is
+  wrong for one kind of guest only is not covered.
+- **`half_life` 180 was picked from three values** on model metrics and checked
+  once in money.
+
+## Archived: frozen confirmation of the earlier version
 
 Frozen October–December confirmation (S2 model, continuous July–December state,
-reconstructed scorer, cheapest = lowest stay value):
+reconstructed scorer, cheapest = lowest stay value), run once at 14:57 with the
+settings and model of commit `09fa7f9`:
 
 | Policy | Net revenue | Walked guests |
 |---|---:|---:|
 | Accept all | €42,368 | 3,873 |
 | Simple capacity cap | €787,100 | 215 |
 | Average-rate overbooking | €1,068,190 | 436 |
-| **Our policy** | **€1,261,492** | **255** |
+| **Frozen version** | **€1,261,492** | **255** |
 
-Our policy earns **€193,302 more (+18.1%)** with **41.5% fewer walks** than
-average-rate overbooking. Occupancy is 80.1%. The alternate nightly-rate reading
-earns €1,243,504 with 237 walks; that sensitivity run changes both the scorer's
-and policy's walk ordering. The primary frozen candidate uses stay value.
-
-The saved checks reconcile all 14,378 booking rows, financial totals, hotel/month
-aggregates and occupancy bounds. Config, source, data and model hashes stayed
-unchanged. See `artifacts/simulate_confirm/summary.csv`, `verification.json`,
-`frozen_config.json` and `run_manifest.json`. These checks do not independently
-reconstruct seating carried over from July–September. The deployment model was
-not used for confirmation because its calibration already includes October–December.
-
-Known weaknesses from tuning, in order of money at stake:
-
-- **Downtown is under-filled in the `year` stream (73% occupancy).** The early
-  rolling models had four months of history and rate Downtown guests far too
-  likely to show (commitments: 58% predicted, 40% actual). The gap closes as
-  history grows (Jul–Sep bookings: 72% predicted, 75% actual), so the Final
-  model should behave better, but that is not measured. Raising `load_target`
-  would look good in this stream and could over-accept in 2017.
-- **On `s2` the price test costs money** (€440k with it, €474k without), while
-  on `year` it earns €145k. It stays on because `year` resembles 2017.
-- `price_mult` between 0.7 and 1.3 moved `year` by under €0.1M with no clear trend.
+It earned **€193,302 more (+18.1%)** than average-rate overbooking. The saved
+checks reconcile all 14,378 booking rows, financial totals, hotel/month
+aggregates and occupancy bounds; see `artifacts/simulate_confirm`. The model
+files of that version were replaced by the final ones; recover them from commit
+`09fa7f9` if needed.
 
 ## Model and splits
 
@@ -204,17 +260,26 @@ restarted at October. The recorded command was (do not use reruns to tune):
 uv run python -u scripts/simulate.py --stream confirm --frozen --config artifacts/simulate_confirm/frozen_config.json --output artifacts/simulate_confirm
 ```
 
-Calibration (validated on July–September 2016 requests, never on October–December).
-The season labels `arrival_month`, `booking_month` and `arrival_week` are built
-but not given to the model: with one or two years of history they memorise that
-year's cancellation level. Removing them cut log loss from 0.581 to 0.477 and
-raised AUC from 0.707 to 0.775 on 4,609 tuning requests; predicted cancellation
-is now 24.1% against 24.3% observed (it was 17.2%). One combined model beat
-separate hotel models there (0.485 vs 0.511 with sigmoid), and isotonic
-calibration beat sigmoid and raw (0.477 / 0.485 / 0.505), so the Final model
-uses combined + isotonic. Seaside still underpredicts cancellation on the whole
-July–September population (22% vs 32%), which errs towards caution.
-The subsequent frozen-policy October–December confirmation is reported above.
+Model choices, each validated on July–September 2016 requests (4,609 rows):
+
+| Step | Log loss | AUC | Predicted / actual cancellation |
+|---|---|---|---|
+| First model, with season labels, per-hotel, sigmoid | 0.581 | 0.707 | 17.2% / 24.3% |
+| Season labels removed, one combined model, isotonic (frozen version) | 0.477 | 0.775 | 24.1% / 24.3% |
+| Trees also trained on the calibration months, half-life 180 days, sigmoid (final) | 0.434 | 0.818 | 25.6% / 24.3% |
+
+- **Season labels** (`arrival_month`, `booking_month`, `arrival_week`) are built
+  but not given to the model: with one or two years of history they memorise
+  that year's cancellation level.
+- **Extended training.** The calibrator is fitted on the first model's
+  predictions for the calibration months, which that model never saw. The trees
+  are then refitted with the same recipe on training + calibration months and
+  the calibrator is kept. The newest months shape the model without it being
+  calibrated on rows it trained on.
+- **Recency weighting.** A training row's weight halves for every 180 days of age.
+- The Final model applies the same recipe one step later: calibrator from a
+  model trained to September 2016 and applied to October–December, trees
+  refitted on all 18 months.
 
 Our reconstructed scorer shows substantial rule sensitivity on July–September:
 accept-all earns net −€1.660M with cheapest stay-value ordering versus −€0.521M

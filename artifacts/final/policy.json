@@ -17,6 +17,10 @@
       0,
       1
     ],
+    "live_scale": true,
+    "live_volume": false,
+    "live_prior": 200.0,
+    "live_refresh_days": 7,
     "cheapest": "stay_value",
     "p_floor": 0.03,
     "walk_penalty": 2.5,
