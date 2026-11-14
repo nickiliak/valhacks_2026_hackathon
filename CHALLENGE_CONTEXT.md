@@ -10,4 +10,9 @@ Judging criteria:
 Performance: net revenue calculation
 Explainability: in your presentation you should explain to a non technical stakeholder how your model works and how it reaches its recommendations
 
+Team clarifications (assumptions we agreed on):
+
+- Deposit type does not affect profit. A cancelled booking earns 0 regardless of its deposit type (including "Non Refund"); no deposit money is counted. Profit = nightly_rate x nights for guests who show up and are seated, minus walk penalties. We still keep the `deposit` column as a model input, because it is a strong predictor of cancellation.
+- The two hotels are completely independent. When one hotel is full, guests are NOT moved to the other hotel. Capacity, overbooking and walk penalties are handled separately per hotel, and an overflow guest is always walked to an external hotel at 2.5x their stay value.
+
 There will also be a technical interviewer aside from the non technical stakeholders so we should be ready for technical questions just in case.
