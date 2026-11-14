@@ -1,23 +1,53 @@
-# Valhacks 2026
+# Hotel booking accept/reject system
+
+Valhacks 2026 (DTU Skylab, organised by BEST Copenhagen, sponsored by Accenture).
+Two hotels (124 and 103 rooms) receive booking requests one at a time, and our
+code answers accept or reject. The score is the revenue of guests who show up and
+get a room, minus 2.5 times the stay value of every guest we have to relocate
+because the hotel is full.
+
+Our approach in one line: **never reject someone for being likely to cancel;
+count each booking as the fraction of a room it is expected to use, keep rooms
+for later, higher-paying guests, and accept only when simulated net revenue
+goes up.**
+
+| Layer | What it does | Where |
+|---|---|---|
+| Show-up model | CatBoost estimates each booking's chance of arriving, calibrated on later months | `src/hackathon/cancellation.py` |
+| Ledger and minimum prices | Expected rooms used per night; a minimum rate per night from what later bookers paid a year earlier | `src/hackathon/policy.py` |
+| Revenue simulation | 200 random show-up scenarios with and without the request; accept if average net revenue rises | `src/hackathon/policy.py` |
+| Replay simulator | Our reconstruction of the scorer, for testing on past bookings | `src/hackathon/simulator.py` |
+
+## Result
+
+On a replay of October–December 2016 (our reconstruction of the scorer) the final
+version earns **€1.348M net**: 26% above average-rate overbooking and 83% of the
+proven hindsight optimum (€1.632M). That period had been inspected before the
+last changes, so it is a development check. An earlier frozen version, scored
+once on untouched months, was 18% ahead of the same baseline. Full tables are
+under "Results of the final version" below.
+
+The hackathon has ended and the organisers did not publish scores, so there is no
+official number; the replay figures are the only evidence. In the judging the
+technical work was not examined, and our presentation (two slides, no live demo)
+is where we fell short. If you reuse this: settle the pitch format early, and
+build a short live demo from `scripts/simulate.py`, which already records a
+readable reason for every decision.
+
+## Setup
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\setup.ps1   # installs uv, Python 3.12 and deps into .venv
 uv run python scripts/unpack.py                         # extract the kits to data/ (password at kick-off)
 ```
 
-Add packages with `uv add <pkg>` (commit `pyproject.toml` + `uv.lock`). Skills: `.claude/skills/` (Claude Code), `.agents/skills/` (Codex).
+Add packages with `uv add <pkg>` (commit `pyproject.toml` + `uv.lock`). The
+training data (`data/train.csv`) is not in the repository. Never use the 2017
+evaluation data; reading it is against the rules.
 
-The whole pipeline is implemented: chronological splits, shared preprocessing,
-historical replay, a calibrated CatBoost cancellation model, nightly minimum
-prices, the acceptance policy, and `scripts/solution.py`, which the organisers'
-`evaluate(Solution)` can run.
-
-**Final version (14 November 2026, 16:30).** On October–December 2016 it earns
-**€1.348M net**, 26% above average-rate overbooking and 83% of the proven
-hindsight optimum (€1.632M). That period had already been inspected, so this is
-a development check, not an independent confirmation; the earlier frozen
-confirmation (€1.261M, an older version) is archived below. The official 2017
-evaluation is still pending.
+The pipeline is complete: chronological splits, shared preprocessing, historical
+replay, the calibrated CatBoost model, nightly minimum prices, the acceptance
+policy, and `scripts/solution.py`, which the organisers' `evaluate(Solution)` can run.
 
 ## Run the pipeline
 
@@ -49,6 +79,7 @@ prints a warning and uses a plain capacity rule instead of crashing.
 | `scripts/analysis/calibration_check.py` | Evidence for removing the season labels |
 | `scripts/analysis/model_recency_check.py` | Evidence for training on the newest months and weighting recent bookings |
 | `scripts/analysis/empty_rooms.py` | Which rule rejected guests who would have fitted into rooms that stayed empty |
+| `pitch/` | The two-slide deck (`.pptx` and `.pdf`), the speaker script with likely questions, and the scripts that build it |
 | `scripts/analysis/stress_test.py` | What happens to revenue and walks if the probabilities are wrong |
 
 ## How a request is decided
